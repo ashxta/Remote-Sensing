@@ -149,30 +149,55 @@ def _split_for_fold(folds: np.ndarray, mask: np.ndarray, test_fold: int,
 
 
 # ----------------------------------------------------------- normalisation
-def training_normalizer(series, train_mask):
-    """Fit per-time-step median and scale on TRAINING samples only.
+def as_channels(series) -> np.ndarray:
+    """Accept (T, N) or (C, T, N) and always return (C, T, N).
 
-    The median fills missing observations and the mean/std standardise the
-    sequence. Every statistic comes from training columns, so no test sample
-    influences the scale its own features are expressed in.
+    Single-channel input is the NDVI-only case kept for backwards
+    compatibility; the fair comparison against the Random Forest uses both
+    NDVI and rainfall.
     """
-    x = np.asarray(series, dtype="float64")          # (T, N)
-    train = x[:, np.asarray(train_mask, bool)]
+    x = np.asarray(series, dtype="float64")
+    if x.ndim == 2:
+        return x[None, ...]
+    if x.ndim == 3:
+        return x
+    raise ValueError(f"series must be (T, N) or (C, T, N), got {x.shape}")
+
+
+def training_normalizer(series, train_mask):
+    """Fit per-channel, per-time-step median and scale on TRAINING samples.
+
+    The median fills missing observations and the mean/std standardise each
+    channel. Every statistic comes from training columns, so no test sample
+    influences the scale its own inputs are expressed in.
+
+    Returns arrays of shape (C, T); a single-channel input keeps the (T,)
+    shape it had before multi-channel support, so existing callers and
+    tests are unaffected.
+    """
+    x = as_channels(series)                              # (C, T, N)
+    single = np.asarray(series).ndim == 2
+    train = x[:, :, np.asarray(train_mask, bool)]
     if train.size == 0:
         raise ValueError("normalizer needs at least one training sample")
-    median = np.nanmedian(train, axis=1)
-    median = np.where(np.isfinite(median), median, 0.0)
-    filled = np.where(np.isfinite(train), train, median[:, None])
-    mean, std = filled.mean(axis=1), filled.std(axis=1)
-    return median, mean, np.where(std > 1e-8, std, 1.0)
+    with np.errstate(all="ignore"):
+        median = np.nanmedian(train, axis=2)             # (C, T)
+        median = np.where(np.isfinite(median), median, 0.0)
+        filled = np.where(np.isfinite(train), train, median[:, :, None])
+        mean = filled.mean(axis=2)
+        std = np.where(filled.std(axis=2) > 1e-8, filled.std(axis=2), 1.0)
+    if single:
+        return median[0], mean[0], std[0]
+    return median, mean, std
 
 
 def transform_series(series, normalizer):
-    """Apply a fitted normalizer; returns (N, 1, T) float32 for torch."""
-    median, mean, std = normalizer
-    x = np.asarray(series, dtype="float64")
-    x = np.where(np.isfinite(x), x, median[:, None])
-    return ((x - mean[:, None]) / std[:, None]).T[:, None, :].astype("float32")
+    """Apply a fitted normalizer; returns (N, C, T) float32 for torch."""
+    median, mean, std = (np.atleast_2d(part) for part in normalizer)
+    x = as_channels(series)                              # (C, T, N)
+    x = np.where(np.isfinite(x), x, median[:, :, None])
+    scaled = (x - mean[:, :, None]) / std[:, :, None]
+    return np.transpose(scaled, (2, 0, 1)).astype("float32")
 
 
 def confidence_outputs(probabilities, threshold=.60):
@@ -188,9 +213,9 @@ def confidence_outputs(probabilities, threshold=.60):
 
 
 # ------------------------------------------------------------------- model
-def _build_network(nn, n_classes: int, cfg: CNNConfig):
+def _build_network(nn, n_classes: int, cfg: CNNConfig, in_channels: int = 1):
     """Small, fixed 1D CNN. Capacity is held constant across experiments."""
-    layers, in_channels = [], 1
+    layers = []
     for out_channels in cfg.channels:
         layers += [nn.Conv1d(in_channels, out_channels, cfg.kernel_size,
                              padding=cfg.kernel_size // 2),
@@ -207,7 +232,8 @@ def _train_one(x, y_index, train, validation, cfg: CNNConfig, n_classes: int,
     torch, nn = _require_torch()
     set_seed(seed, deterministic=cfg.deterministic)
     device = "cuda" if torch.cuda.is_available() else "cpu"
-    model = _build_network(nn, n_classes, cfg).to(device)
+    model = _build_network(nn, n_classes, cfg,
+                           in_channels=int(x.shape[1])).to(device)
     optimiser = torch.optim.Adam(model.parameters(), lr=cfg.learning_rate,
                                  weight_decay=cfg.weight_decay)
     loss_fn = nn.CrossEntropyLoss()
@@ -270,12 +296,20 @@ def _predict(model, x, mask, device):
 
 
 def run_spatial_cnn(series, labels, fold_grid, output_dir, cfg=None, *,
-                    sample_mask=None, uncertainty_cfg=None, logger=None):
-    """Spatially cross-validated 1D CNN on the raw NDVI sequences.
+                    sample_mask=None, uncertainty_cfg=None,
+                    channel_names=None, logger=None):
+    """Spatially cross-validated 1D CNN on the raw input sequences.
 
-    `series` is (time, samples); `fold_grid` may be flat or a 2-D grid with
-    the same number of entries. With `cfg.spatial_cv` every fold is held out
-    in turn; otherwise a single train/validation/test split is run.
+    `series` is (time, samples) for a single channel, or (channels, time,
+    samples) for several - normally NDVI and rainfall together, so the
+    network has access to the same information the engineered features are
+    built from. Giving the CNN only NDVI while the Random Forest also sees
+    rainfall and RESTREND would make the comparison unfair, which is why
+    `channel_names` is recorded in the outputs.
+
+    `fold_grid` may be flat or a 2-D grid with the same number of entries.
+    With `cfg.spatial_cv` every fold is held out in turn; otherwise a single
+    train/validation/test split is run.
 
     Test samples never influence normalisation, early stopping, checkpoint
     selection or optimisation - only the final metrics.
@@ -292,12 +326,19 @@ def run_spatial_cnn(series, labels, fold_grid, output_dir, cfg=None, *,
     uncertainty_cfg = uncertainty_cfg or UncertaintyConfig()
     _require_torch()
 
-    x_raw = np.asarray(series, dtype="float64")
+    x_raw = as_channels(series)                       # (C, T, N)
     y = np.asarray(labels)
     folds = np.asarray(fold_grid).reshape(-1)
-    if x_raw.shape[1] != len(y) or len(y) != len(folds):
-        raise ValueError("series, labels and folds must describe identical "
-                         "samples")
+    if x_raw.shape[2] != len(y) or len(y) != len(folds):
+        raise ValueError(
+            f"series describes {x_raw.shape[2]} samples but there are "
+            f"{len(y)} labels and {len(folds)} fold entries; all three must "
+            "describe identical samples")
+    channel_names = list(channel_names) if channel_names is not None \
+        else [f"channel_{i}" for i in range(x_raw.shape[0])]
+    if len(channel_names) != x_raw.shape[0]:
+        raise ValueError(f"{len(channel_names)} channel names for "
+                         f"{x_raw.shape[0]} channels")
     mask = np.ones(len(y), bool) if sample_mask is None \
         else np.asarray(sample_mask, bool)
     if not mask.any():
@@ -368,6 +409,8 @@ def run_spatial_cnn(series, labels, fold_grid, output_dir, cfg=None, *,
     summary["validation"] = "spatial_block_cv" if cfg.spatial_cv \
         else "single_spatial_split"
     summary["model"] = "cnn_1d"
+    summary["input_channels"] = list(channel_names)
+    summary["n_input_channels"] = int(x_raw.shape[0])
     summary["fold_metrics"] = fold_metrics
     summary["fold_summary"] = aggregate_fold_metrics(fold_metrics)
     summary["n_evaluated"] = int(evaluated.sum())
@@ -395,9 +438,10 @@ def run_spatial_cnn(series, labels, fold_grid, output_dir, cfg=None, *,
     (out / "metrics.json").write_text(json.dumps(summary, indent=2))
     (out / "configuration.json").write_text(json.dumps(
         {"model": asdict(cfg), "uncertainty": asdict(uncertainty_cfg),
-         "classes": classes.tolist(), "folds": fold_records}, indent=2))
+         "classes": classes.tolist(), "folds": fold_records,
+         "input_channels": list(channel_names)}, indent=2))
 
     return {"metrics": summary, "predictions": predictions,
             "probabilities": probabilities, "evaluated": evaluated,
             "classes": classes, "history": pd.DataFrame(histories),
-            "folds": fold_records}
+            "folds": fold_records, "channel_names": list(channel_names)}

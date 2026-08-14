@@ -1,0 +1,36 @@
+{
+  "type": "FeatureCollection",
+  "name": "Karbi_Anglong_bbox",
+  "crs_of_coordinates": "EPSG:4326",
+  "geometry_kind": "bounding box",
+  "is_administrative_boundary": false,
+  "description": "APPROXIMATE RECTANGULAR EXTENT around Karbi Anglong district, Assam, India. This is NOT the administrative district boundary. It is the bounding box that this repository's Earth Engine scripts have used since M1 (gee/01_ndvi_rainfall_timeseries.py), expressed as GeoJSON so it can be supplied through the configurable boundary interface instead of being hard-coded. It includes substantial land outside the district on every side; area statistics computed from it describe the rectangle, not the district. Replace with an authoritative district polygon before reporting any district-level result. See data/boundaries/README.md.",
+  "provenance": "Bounding box literal in gee/01_ndvi_rainfall_timeseries.py, present since M1; no authoritative source.",
+  "licence": "Not applicable: a rectangle, not a derived dataset.",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Karbi_Anglong_bbox",
+        "district_claimed": "Karbi Anglong",
+        "state": "Assam",
+        "country": "India",
+        "is_administrative_boundary": false,
+        "geometry_kind": "bounding box",
+        "warning": "Rectangular approximation. Area statistics refer to this rectangle, not to the administrative district."
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [92.30, 25.55],
+            [93.85, 25.55],
+            [93.85, 26.60],
+            [92.30, 26.60],
+            [92.30, 25.55]
+          ]
+        ]
+      }
+    }
+  ]
+}

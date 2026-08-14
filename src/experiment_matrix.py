@@ -42,15 +42,18 @@ import numpy as np
 import pandas as pd
 
 from .config import Config
+from .discrimination import run_discrimination_analysis
 from .features import feature_names
 from .uncertainty import uncertainty_summary
 from .validation import (aggregate_fold_metrics, classification_metrics,
                          spatial_cv_rf)
 
-__all__ = ["baseline_trend_prediction", "binary_degradation_labels",
+__all__ = ["baseline_trend_prediction", "baseline_restrend_prediction",
+           "baseline_integrated_prediction", "binary_degradation_labels",
            "run_experiment_matrix", "MATRIX_METHODS"]
 
-MATRIX_METHODS = ("baseline_trend", "rf_basic", "cnn_1d", "rf_proposed")
+MATRIX_METHODS = ("baseline_trend", "baseline_restrend",
+                  "baseline_integrated", "rf_basic", "cnn_1d", "rf_proposed")
 
 
 def binary_degradation_labels(labels, degradation_classes) -> np.ndarray:
@@ -86,6 +89,83 @@ def baseline_trend_prediction(features: pd.DataFrame, cfg: Config) -> dict:
                      "negative Sen slope). The probability column is a "
                      "monotone transform of the p-value, not a calibrated "
                      "probability.")}
+
+
+def baseline_restrend_prediction(features: pd.DataFrame, cfg: Config) -> dict:
+    """Experiment 2: conventional trend detection PLUS rainfall correction.
+
+    A pixel is flagged only if the decline survives climate adjustment, or
+    if the NDVI~rainfall relationship is too weak for the adjustment to
+    mean anything (M1's `restrend_valid` gate), in which case the raw
+    decline stands uncorrected rather than being silently dropped.
+
+    This is the rule-based ancestor of the proposed framework: it isolates
+    what the rainfall correction alone contributes over Experiment 1.
+    """
+    alpha = cfg.trend.alpha
+    mk_p = features["mk_p_value"].to_numpy(dtype="float64")
+    sen = features["sen"].to_numpy(dtype="float64")
+    restrend_p = features["restrend_p_value"].to_numpy(dtype="float64")
+    restrend = features["restrend"].to_numpy(dtype="float64")
+    # `restrend_valid` marks where the NDVI~rainfall relation is strong
+    # enough for the adjustment to mean anything. It is NOT the same as
+    # `restrend_significant`, which additionally requires the ADJUSTED TREND
+    # to be significant - using that here would keep every climate-explained
+    # decline flagged and make this rule identical to Experiment 1.
+    interpretable = features["restrend_valid"].to_numpy(dtype="float64") > 0
+    raw_decline = (np.isfinite(mk_p) & (mk_p < alpha) & np.isfinite(sen)
+                   & (sen < 0))
+    adjusted_decline = (np.isfinite(restrend_p) & (restrend_p < alpha)
+                        & np.isfinite(restrend) & (restrend < 0))
+    # Uninterpretable adjustment -> keep the uncorrected decline.
+    flagged = raw_decline & (adjusted_decline | ~interpretable)
+    with np.errstate(invalid="ignore"):
+        score = np.where(flagged, 1.0 - np.nan_to_num(restrend_p, nan=0.5),
+                         np.clip(np.nan_to_num(mk_p, nan=1.0) / 2.0, 0.0, 0.5))
+    return {"predictions": flagged.astype(int),
+            "probabilities": np.c_[1.0 - score, score],
+            "classes": np.array([0, 1]),
+            "note": ("Mann-Kendall + Sen decline that survives RESTREND "
+                     "climate adjustment, or whose adjustment is not "
+                     "interpretable. The score is a monotone transform of "
+                     "the p-value, not a calibrated probability.")}
+
+
+def baseline_integrated_prediction(features: pd.DataFrame, cfg: Config) -> dict:
+    """Experiments 3-4 as a RULE: trend + rainfall correction + cyclicity
+    + disturbance evidence, with no learning involved.
+
+    This is the honest statistical counterpart of the proposed framework.
+    It matters because a Random Forest improvement over Experiment 1 could
+    come either from the extra temporal evidence or merely from having a
+    flexible learner; comparing against this rule separates the two.
+
+    A pixel is flagged as persistent degradation when the decline
+      * is significant,
+      * survives climate adjustment (or the adjustment is uninterpretable),
+      * is NOT explained by a detected cycle, and
+      * is NOT a single disturbance that has already largely recovered.
+    """
+    restrend_rule = baseline_restrend_prediction(features, cfg)
+    flagged = restrend_rule["predictions"].astype(bool)
+    trajectory = cfg.research.trajectory
+    periodic = features["cyclicity_periodic"].to_numpy(dtype="float64") > 0
+    enrichment = features["cyc_enrichment"].to_numpy(dtype="float64")
+    cyclic = periodic & np.isfinite(enrichment) & (
+        enrichment >= cfg.cyclicity.periodicity_threshold)
+    recovered = (features["has_disturbance"].to_numpy(dtype="float64") > 0) \
+        & (features["recovery_fraction"].to_numpy(dtype="float64")
+           >= trajectory.recovery_fraction_threshold)
+    flagged = flagged & ~cyclic & ~recovered
+    score = restrend_rule["probabilities"][:, 1]
+    score = np.where(flagged, score, np.minimum(score, 0.5))
+    return {"predictions": flagged.astype(int),
+            "probabilities": np.c_[1.0 - score, score],
+            "classes": np.array([0, 1]),
+            "note": ("Rule-based integrated framework: significant decline, "
+                     "surviving climate adjustment, not attributable to a "
+                     "detected cycle, and not an already-recovered "
+                     "disturbance. No learning; no calibrated probability.")}
 
 
 def _fold_metrics_for_rule(y_true, y_pred, folds, mask, labels) -> list:
@@ -159,11 +239,17 @@ def _common_evaluation(runs: dict, target: np.ndarray, labels_present,
 def run_experiment_matrix(features: pd.DataFrame, labels, fold_grid,
                           output_dir, cfg: Config | None = None, *,
                           series=None, sample_mask=None, block_row=None,
-                          block_col=None, logger=None) -> pd.DataFrame:
+                          block_col=None, channel_names=None,
+                          logger=None) -> pd.DataFrame:
     """Run the method comparison and save machine-readable results.
 
-    `series` is the raw (time, samples) NDVI stack, required only for the
-    CNN. When it is absent, or torch is not installed, the CNN row is
+    `series` is the raw sequence stack for the CNN, either (time, samples)
+    or (channels, time, samples). Pass BOTH NDVI and rainfall: the Random
+    Forest sees rainfall through the engineered features, so an NDVI-only
+    CNN would be judged on strictly less information than its competitor.
+    The channels actually used are recorded in the outputs.
+
+    When `series` is absent, or torch is not installed, the CNN row is
     recorded as skipped with the reason - never silently dropped.
     """
     cfg = cfg or Config()
@@ -184,9 +270,23 @@ def run_experiment_matrix(features: pd.DataFrame, labels, fold_grid,
     runs = {"binary_degradation": {}, "multiclass_trajectory": {}}
     meta = {}
 
-    # ------------------------------------------------ conventional baseline
+    # ---------------------------------------------- statistical baselines
+    # Experiment 1: trend only. Experiment 2: + rainfall correction.
+    # Experiments 3-4 as a rule: + cyclicity and disturbance evidence.
+    # Running all three isolates what each added component contributes
+    # BEFORE any machine learning is involved.
+    statistical_rules = []
     if matrix_cfg.run_baseline:
-        rule = baseline_trend_prediction(features, cfg)
+        statistical_rules = [
+            ("baseline_trend", baseline_trend_prediction, 2,
+             "Mann-Kendall p + Sen slope sign"),
+            ("baseline_restrend", baseline_restrend_prediction, 4,
+             "trend + RESTREND climate adjustment"),
+            ("baseline_integrated", baseline_integrated_prediction, 7,
+             "trend + climate adjustment + cyclicity + recovery (rule)"),
+        ]
+    for name, rule_fn, n_inputs, representation in statistical_rules:
+        rule = rule_fn(features, cfg)
         predictions = rule["predictions"]
         metrics = classification_metrics(binary[mask], predictions[mask],
                                          labels=binary_labels)
@@ -199,18 +299,17 @@ def run_experiment_matrix(features: pd.DataFrame, labels, fold_grid,
         metrics["uncertainty"] = uncertainty_summary(
             rule["probabilities"][mask], truth=binary[mask],
             predictions=predictions[mask], cfg=cfg.research.uncertainty)
-        details["baseline_trend"] = metrics
-        runs["binary_degradation"]["baseline_trend"] = {
+        details[name] = metrics
+        runs["binary_degradation"][name] = {
             "predictions": predictions, "evaluated": mask.copy()}
-        meta["baseline_trend"] = {
-            "n_features": 2,
-            "representation": "Mann-Kendall p + Sen slope sign",
-            "validation": "fixed rule (no training)"}
+        meta[name] = {"n_features": n_inputs,
+                      "representation": representation,
+                      "validation": "fixed rule (no training)"}
         if logger is not None:
-            logger.info("  matrix baseline_trend (MK+Sen rule): macro F1 "
-                        "%.4f, recall on degradation %.4f",
-                        metrics["f1_macro"],
-                        metrics["per_class"]["1"]["recall"])
+            logger.info("  matrix %-20s macro F1 %.4f | recall on "
+                        "degradation %.4f | precision %.4f", name,
+                        metrics["f1_macro"], metrics["per_class"]["1"]["recall"],
+                        metrics["per_class"]["1"]["precision"])
 
     # ----------------------------------------------------- Random Forest(s)
     forest_variants = []
@@ -262,15 +361,22 @@ def run_experiment_matrix(features: pd.DataFrame, labels, fold_grid,
                             "reason": "optional dependency 'torch' is not "
                                       "installed"})
         else:
+            stack = np.asarray(series, dtype="float64")
+            n_channels = 1 if stack.ndim == 2 else int(stack.shape[0])
+            n_steps = stack.shape[0] if stack.ndim == 2 else stack.shape[1]
+            names = list(channel_names) if channel_names is not None else (
+                ["ndvi"] if n_channels == 1 else
+                [f"channel_{i}" for i in range(n_channels)])
             meta["cnn_1d"] = {
-                "n_features": int(series.shape[0]),
-                "representation": "learned from the raw NDVI sequence",
+                "n_features": int(n_steps * n_channels),
+                "representation": "learned from the raw "
+                                  + " + ".join(names) + " sequence",
                 "validation": "spatial_block_cv"}
             for task, target in (("binary_degradation", binary),
                                  ("multiclass_trajectory", y)):
                 result = run_spatial_cnn(
                     series, target, folds, root / f"cnn_{task}", cfg.research.cnn,
-                    sample_mask=mask,
+                    sample_mask=mask, channel_names=names,
                     uncertainty_cfg=cfg.research.uncertainty, logger=logger)
                 metrics = result["metrics"]
                 details[f"cnn_1d__{task}"] = metrics
@@ -313,7 +419,22 @@ def run_experiment_matrix(features: pd.DataFrame, labels, fold_grid,
     table = pd.DataFrame(rows)
     table.to_csv(root / "experiment_matrix.csv", index=False)
 
+    # ---------------------------------- the research question, measured
+    # Every method that produced a degradation call is scored on how well
+    # it separates degradation from EACH confounder, not just on average.
+    discrimination = None
+    binary_runs = runs["binary_degradation"]
+    if binary_runs:
+        discrimination = run_discrimination_analysis(
+            y, {name: np.asarray(run["predictions"]).astype(bool)
+                for name, run in binary_runs.items()},
+            root / "discrimination",
+            degradation_classes=matrix_cfg.degradation_classes,
+            class_names=cfg.classes, sample_mask=mask, logger=logger)
+
     conclusion = _conclusion(table)
+    if discrimination is not None:
+        conclusion["discrimination"] = discrimination["report"]["best_by_margin"]
     (root / "experiment_matrix.json").write_text(json.dumps({
         "question": ("Does multi-temporal trajectory analysis improve "
                      "detection of land degradation compared with "

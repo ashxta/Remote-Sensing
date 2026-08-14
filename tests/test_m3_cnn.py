@@ -102,6 +102,50 @@ def test_test_samples_cannot_change_the_normalizer():
         assert np.allclose(a, b)
 
 
+def test_multichannel_input_is_accepted_and_shaped_correctly():
+    """Fairness: the CNN must be able to see rainfall, like the forest does."""
+    rng = np.random.default_rng(2)
+    series = rng.normal(0.5, 0.1, (2, T, 20))       # (channels, time, samples)
+    train = np.zeros(20, bool)
+    train[:12] = True
+    normalizer = training_normalizer(series, train)
+    assert normalizer[0].shape == (2, T), "one median per channel and step"
+    transformed = transform_series(series, normalizer)
+    assert transformed.shape == (20, 2, T)
+    assert np.isfinite(transformed).all()
+
+
+def test_single_channel_shape_is_unchanged():
+    """Backwards compatibility with the NDVI-only interface."""
+    rng = np.random.default_rng(3)
+    series = rng.normal(0.5, 0.1, (T, 15))
+    train = np.zeros(15, bool)
+    train[:9] = True
+    normalizer = training_normalizer(series, train)
+    assert normalizer[0].shape == (T,)
+    assert transform_series(series, normalizer).shape == (15, 1, T)
+
+
+def test_channels_are_normalised_independently():
+    """A large-scale channel must not swamp a small-scale one."""
+    ndvi = np.full((T, 10), 0.5)
+    rain = np.full((T, 10), 1800.0)
+    ndvi[0] = 0.9
+    rain[0] = 2400.0
+    stacked = np.stack([ndvi, rain])
+    train = np.ones(10, bool)
+    transformed = transform_series(stacked,
+                                   training_normalizer(stacked, train))
+    assert np.isfinite(transformed).all()
+    assert abs(transformed[:, 0, :].std() - transformed[:, 1, :].std()) < 1e-6
+
+
+def test_channel_count_mismatch_is_rejected():
+    rng = np.random.default_rng(4)
+    with pytest.raises(ValueError, match="series must be"):
+        training_normalizer(rng.normal(size=(2, 2, T, 5)), np.ones(5, bool))
+
+
 def test_missing_values_are_filled_from_training_medians():
     series = np.array([[1.0, 3.0, np.nan], [2.0, 4.0, np.nan]])
     normalizer = training_normalizer(series, np.array([True, True, False]))
@@ -222,6 +266,35 @@ def test_cnn_uses_every_fold_under_spatial_cv(tmp_path):
     assert result["evaluated"].all()
     assert len(result["metrics"]["fold_metrics"]) == 4
     assert result["metrics"]["validation"] == "spatial_block_cv"
+
+
+@torch_required
+def test_cnn_runs_on_two_channels_and_records_them(tmp_path):
+    """The fair configuration: NDVI and rainfall, both declared."""
+    series, labels = sequences()
+    rng = np.random.default_rng(9)
+    rain = rng.normal(1800, 200, series.shape)
+    folds = spatial_block_folds(H, W, SpatialCVConfig(block_size=3, n_folds=4,
+                                                      seed=9))[1].reshape(-1)
+    result = run_spatial_cnn(np.stack([series, rain]), labels, folds,
+                             tmp_path, CNNConfig(max_epochs=3, patience=2,
+                                                 max_folds=1),
+                             channel_names=["ndvi", "rainfall"])
+    assert result["channel_names"] == ["ndvi", "rainfall"]
+    assert result["metrics"]["n_input_channels"] == 2
+    saved = json.loads((tmp_path / "configuration.json").read_text())
+    assert saved["input_channels"] == ["ndvi", "rainfall"]
+
+
+@torch_required
+def test_cnn_rejects_mislabelled_channels(tmp_path):
+    series, labels = sequences()
+    folds = spatial_block_folds(H, W, SpatialCVConfig(block_size=3, n_folds=4,
+                                                      seed=10))[1].reshape(-1)
+    with pytest.raises(ValueError, match="channel names"):
+        run_spatial_cnn(series, labels, folds, tmp_path,
+                        CNNConfig(max_epochs=2, max_folds=1),
+                        channel_names=["ndvi", "rainfall"])
 
 
 @torch_required

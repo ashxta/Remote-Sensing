@@ -8,7 +8,12 @@ pymannkendall>=1.4
 streamlit>=1.35
 torch>=2.2            # 1D-CNN only; use --no-cnn without it
 shap>=0.44            # optional explainability; skipped cleanly if absent
-earthengine-api       # real-data mode only
-geopandas>=0.14       # district boundary handling (real-data mode)
+# --- M6 real-data mode ----------------------------------------------------
+# Boundary handling, reprojection, rasterisation and CRS work all go through
+# rasterio's own GDAL/PROJ bindings, so real-data ingestion needs NO extra
+# dependency: geopandas, shapely, fiona and pyproj are optional throughout.
+earthengine-api       # optional: Earth Engine acquisition backend only
+fiona>=1.9            # optional: shapefile/GeoPackage boundaries.
+#                       GeoJSON boundaries need nothing extra.
 pytest>=8.0            # test suite
 joblib>=1.3            # model persistence

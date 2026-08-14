@@ -394,10 +394,15 @@ def main(cfg: Config | None = None, *, source=None):
 
     # ------------------------------------------------- 8 experiment matrix
     log.info("STAGE 8/9  experiment matrix: baseline vs RF vs CNN vs proposed")
+    # The CNN receives BOTH channels: the Random Forest sees rainfall
+    # through the engineered features, so an NDVI-only CNN would be judged
+    # on strictly less information than its competitor.
+    cnn_series = np.stack([prepared.series, prepared.rain_series])
     matrix = run_experiment_matrix(
         features, labels, folds, exp.path("metrics", "experiment_matrix"),
-        cfg, series=prepared.series, sample_mask=sample_mask,
-        block_row=prepared.block_row, block_col=prepared.block_col, logger=log)
+        cfg, series=cnn_series, channel_names=["ndvi", "rainfall"],
+        sample_mask=sample_mask, block_row=prepared.block_row,
+        block_col=prepared.block_col, logger=log)
     exp.save_table("experiment_matrix", matrix.set_index(["method", "task"]))
     results["experiment_matrix"] = matrix.to_dict(orient="records")
     for task, filename, title in (
@@ -416,6 +421,20 @@ def main(cfg: Config | None = None, *, source=None):
     if history_path.exists():
         RF.plot_learning_curves(pd.read_csv(history_path),
                                 exp.figure("cnn_learning_curves.png"))
+    # The research question, made visible: which behaviours does each method
+    # mistake for degradation?
+    confusion_path = (exp.path("metrics", "experiment_matrix")
+                      / "discrimination" / "confounder_confusion.csv")
+    if confusion_path.exists():
+        confounders = pd.read_csv(confusion_path)
+        RF.plot_discrimination(confounders,
+                               exp.figure("degradation_discrimination.png"))
+        summary_path = (exp.path("metrics", "experiment_matrix")
+                        / "discrimination" / "discrimination_summary.csv")
+        discrimination = pd.read_csv(summary_path)
+        exp.save_table("degradation_discrimination",
+                       discrimination.set_index("method"))
+        results["discrimination"] = discrimination.to_dict(orient="records")
 
     # ------------------------------------ 9 ablation, sensitivity, holdout
     log.info("STAGE 9/9  ablation, sensitivity and temporal holdout")

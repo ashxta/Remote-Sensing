@@ -112,6 +112,11 @@ FEATURE_SPECS: tuple = (
                 "relationship controlling for time", "timeseries.restrend"),
     FeatureSpec("restrend_beta", "restrend", "NDVI sensitivity to rainfall",
                 "timeseries.restrend"),
+    FeatureSpec("restrend_valid", "restrend", "1 where the NDVI~rainfall "
+                "relationship is strong and significant enough for the "
+                "climate adjustment to be interpretable at all; where 0, a "
+                "residual trend is NOT climate-corrected in any meaningful "
+                "sense", "timeseries.restrend"),
     FeatureSpec("restrend_significant", "restrend", "1 where the residual "
                 "trend is significant AND the rainfall relation is valid",
                 "features.build_feature_table"),
@@ -313,6 +318,8 @@ def build_feature_table(ndvi, rain, cfg: Config | None = None):
             "restrend_p_value": np.asarray(ex["restrend_p"], dtype="float64"),
             "restrend_r2": np.asarray(ex["restrend_r2"], dtype="float64"),
             "restrend_beta": np.asarray(ex["restrend_beta"], dtype="float64"),
+            "restrend_valid": np.asarray(ex["restrend_valid"],
+                                         dtype=bool).astype("float64"),
             "restrend_significant": (
                 (np.asarray(ex["restrend_p"], dtype="float64")
                  < cfg.restrend.alpha)

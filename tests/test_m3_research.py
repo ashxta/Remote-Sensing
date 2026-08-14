@@ -250,10 +250,11 @@ def test_experiment_matrix_compares_methods_on_one_protocol(built, tmp_path):
     cfg.research.model = RFExperimentConfig(n_estimators=15, seed=1)
     cfg.research.matrix.run_cnn = False
     matrix = run_experiment_matrix(table, labels, folds, tmp_path, cfg)
-    assert set(matrix["method"]) == {"baseline_trend", "rf_basic",
+    assert set(matrix["method"]) == {"baseline_trend", "baseline_restrend",
+                                     "baseline_integrated", "rf_basic",
                                      "rf_proposed"}
     binary = matrix[matrix["task"] == "binary_degradation"]
-    assert len(binary) == 3, "every method must attempt the shared task"
+    assert len(binary) == 5, "every method must attempt the shared task"
     assert (tmp_path / "experiment_matrix.csv").exists()
     saved = json.loads((tmp_path / "experiment_matrix.json").read_text())
     assert "question" in saved and "conclusion" in saved

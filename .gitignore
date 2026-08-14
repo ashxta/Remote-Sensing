@@ -1,0 +1,67 @@
+# ---------------------------------------------------------------------------
+# Credentials and secrets (M6)
+#
+# Real-data acquisition needs Google Earth Engine authentication. Nothing
+# that authenticates may ever enter version control. These patterns are
+# deliberately broad: a false positive costs one `git add -f`, a false
+# negative publishes a credential.
+# ---------------------------------------------------------------------------
+.env
+.env.*
+*.pem
+*.key
+*.p12
+*credentials*.json
+*service-account*.json
+*service_account*.json
+*-privatekey.json
+.earthengine/
+.config/earthengine/
+ee-token.json
+gee_service_account.json
+secrets/
+.secrets/
+
+# ---------------------------------------------------------------------------
+# Data (large, regenerable, and in the real-data case redistributable only
+# under the provider's licence)
+# ---------------------------------------------------------------------------
+data/rasters/
+data/raw/
+data/processed/
+data/composites/
+data/interim/
+data/metadata/
+data/reference/
+*.tif
+*.tiff
+*.img
+*.hdf
+*.nc
+*.zip
+
+# Boundaries ARE tracked: they are small, and reproducing a study needs the
+# exact study-area geometry that produced it.
+!data/boundaries/*.geojson
+!data/boundaries/*.json
+
+# ---------------------------------------------------------------------------
+# Experiment outputs
+# ---------------------------------------------------------------------------
+results/
+outputs/
+
+# ---------------------------------------------------------------------------
+# Python
+# ---------------------------------------------------------------------------
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ipynb_checkpoints/
+build/
+dist/
+.venv/
+venv/
+env/

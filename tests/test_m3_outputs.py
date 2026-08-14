@@ -247,7 +247,8 @@ def test_experiment_summary_records_the_run_shape(m3_run):
                           / "experiment_summary.json").read_text())
     assert summary["n_analysed"] > 0
     assert summary["n_model_samples"] > 0
-    assert summary["n_features"] == 45
+    from src.features import feature_names
+    assert summary["n_features"] == len(feature_names())
     assert results["experiment"]["n_folds"] >= 2
 
 

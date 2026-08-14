@@ -31,7 +31,7 @@ __all__ = ["dev_title", "plot_temporal_diagnostics", "plot_spectrum",
            "plot_spatial_folds", "plot_trajectory_map",
            "plot_probability_map", "plot_class_distribution",
            "plot_sensitivity", "plot_learning_curves", "plot_quality_map",
-           "plot_uncertainty_map"]
+           "plot_uncertainty_map", "plot_discrimination"]
 
 DEV_PREFIX = "DEVELOPMENT / SYNTHETIC"
 
@@ -304,6 +304,42 @@ def plot_sensitivity(table: pd.DataFrame, path, *,
     return path
 
 
+def plot_discrimination(per_class: pd.DataFrame, path, *,
+                        title="Degradation vs its confounders",
+                        synthetic: bool = True):
+    """Per method, the flag rate on the target and on EACH confounder.
+
+    The figure the research question actually needs: a tall bar on a
+    confounder is a method mistaking that behaviour for degradation, which
+    an averaged score would hide.
+    """
+    if per_class is None or len(per_class) == 0:
+        return None
+    frame = per_class.copy()
+    methods = list(dict.fromkeys(frame["method"]))
+    classes = list(dict.fromkeys(frame["class_name"]))
+    positions = np.arange(len(classes))
+    width = 0.8 / max(len(methods), 1)
+    fig, ax = plt.subplots(figsize=(1.7 * len(classes) + 4.5, 5.0))
+    for i, method in enumerate(methods):
+        subset = frame[frame["method"] == method].set_index("class_name")
+        values = [float(subset.loc[c, "flagged_rate"]) if c in subset.index
+                  else 0.0 for c in classes]
+        ax.bar(positions + i * width, values, width, label=method)
+    roles = frame.drop_duplicates("class_name").set_index("class_name")["role"]
+    ax.set_xticks(positions + width * (len(methods) - 1) / 2)
+    ax.set_xticklabels(
+        [f"{c}\n({roles.get(c, '')})" for c in classes], fontsize=8)
+    ax.set_ylim(0, 1.05)
+    ax.set_ylabel("share flagged as degradation")
+    ax.set_title(dev_title(title + "\nhigh on the target = recall; high on a "
+                           "confounder = false positives", synthetic),
+                 fontsize=11)
+    ax.legend(fontsize=8)
+    ax.grid(axis="y", alpha=0.3)
+    return _save(fig, path)
+
+
 def plot_class_distribution(counts: dict, path, *,
                             title="Trajectory class distribution",
                             synthetic: bool = True):
@@ -438,8 +474,11 @@ def plot_trajectory_map(labels, mask, shape, path, *,
         dtype="float64")
     grid = _grid(codes, mask, shape, fill=0.0)
     names = ["(no data)"] + list(TRAJECTORY_CODES)
-    colors = ["#dddddd", "#8fbf7f", "#c0242b", "#3a86c8", "#e07b39",
-              "#9e9e9e"]
+    # Stable green; persistent decline deep red; rainfall-associated decline
+    # a distinct brown so it cannot be mistaken for degradation at a glance;
+    # disturbance orange; recovery blue; cyclic purple; uncertain grey.
+    colors = ["#dddddd", "#8fbf7f", "#c0242b", "#b07a3c", "#e8913a",
+              "#3a86c8", "#7b5ea7", "#9e9e9e"]
     cmap = ListedColormap(colors[:len(names)])
     bounds = [-0.5] + [i + 0.5 for i in range(len(names))]
     fig, ax = plt.subplots(figsize=(10, 6))

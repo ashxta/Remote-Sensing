@@ -90,8 +90,15 @@ def quick_config(cfg: Config) -> Config:
     return cfg
 
 
-def write_analysis_layers(prepared, exp, log) -> int:
-    """GeoTIFF + PNG for every temporal-analysis quantity."""
+def write_analysis_layers(prepared, exp, log, *,
+                          synthetic: bool = True) -> int:
+    """GeoTIFF + PNG for every temporal-analysis quantity.
+
+    `synthetic` controls the DEVELOPMENT/SYNTHETIC banner on the figures. It
+    defaults to True so M2/M3 runs keep it; the M6 real-data runner passes
+    False, because labelling real observations as synthetic is as misleading
+    as the reverse.
+    """
     grid = prepared.analysis_grid
     shape = prepared.shape
     features, georef = prepared.features, prepared.georef
@@ -116,16 +123,17 @@ def write_analysis_layers(prepared, exp, log) -> int:
             ("recovery_fraction", "Recovery fraction", "map_recovery.png",
              {"cmap": "YlGn"})):
         maps.save_continuous(features[column].to_numpy(), grid, shape,
-                             RF.dev_title(title), exp.figure(filename),
-                             **kwargs)
+                             RF.dev_title(title, synthetic),
+                             exp.figure(filename), **kwargs)
     RF.plot_quality_map(prepared.quality.flag, shape,
-                        exp.figure("map_data_quality.png"))
+                        exp.figure("map_data_quality.png"),
+                        synthetic=synthetic)
     log.info("wrote %d georeferenced layers and 6 maps",
              len(FEATURE_LAYERS) + 1)
     return len(FEATURE_LAYERS) + 1
 
 
-def write_trajectory_outputs(prepared, exp) -> None:
+def write_trajectory_outputs(prepared, exp, *, synthetic: bool = True) -> None:
     """Trajectory classes as GeoTIFF, GeoJSON polygons and figures."""
     codes = trajectory_codes(prepared.trajectory_labels)
     geo.write_layer(exp.path("predictions", "trajectory_category.tif"),
@@ -143,12 +151,15 @@ def write_trajectory_outputs(prepared, exp) -> None:
                     "signal categories, NOT verified land cover")
     RF.plot_trajectory_map(prepared.trajectory_labels, prepared.analysis_grid,
                            prepared.shape,
-                           exp.figure("map_trajectory_categories.png"))
+                           exp.figure("map_trajectory_categories.png"),
+                           synthetic=synthetic)
     RF.plot_class_distribution(prepared.trajectory_summary["counts"],
-                               exp.figure("trajectory_class_distribution.png"))
+                               exp.figure("trajectory_class_distribution.png"),
+                               synthetic=synthetic)
 
 
-def write_temporal_diagnostics(prepared, exp, cfg: Config) -> list:
+def write_temporal_diagnostics(prepared, exp, cfg: Config, *,
+                               synthetic: bool = True) -> list:
     """One four-panel temporal figure per reference class.
 
     Covers the whole temporal story for a representative pixel: NDVI with
@@ -177,7 +188,8 @@ def write_temporal_diagnostics(prepared, exp, cfg: Config) -> list:
             break_index=features["breakpoint_index"].iloc[row],
             trough_index=None if features["has_disturbance"].iloc[row] == 0
             else trough[row],
-            recovery_slope=features["recovery_slope"].iloc[row]))
+            recovery_slope=features["recovery_slope"].iloc[row],
+            synthetic=synthetic))
     return written
 
 

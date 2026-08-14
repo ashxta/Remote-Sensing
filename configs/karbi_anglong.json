@@ -1,0 +1,93 @@
+{
+  "_comment": [
+    "M6 example configuration for the selected Assam study area.",
+    "",
+    "TWO THINGS MUST BE SUPPLIED BEFORE THIS PRODUCES RESEARCH EVIDENCE:",
+    "  1. study_area.boundary - replace the bounding box with the",
+    "     authoritative district polygon. See data/boundaries/README.md.",
+    "  2. real_data.reference - independent reference labels. Without them",
+    "     the supervised stages are reported BLOCKED and the statistical",
+    "     analysis runs alone. See docs/REAL_DATA_SETUP.md section 3.",
+    "",
+    "real_data.ndvi_cube / rain_cube are filled in by `--prepare`, or set",
+    "by hand to Earth Engine exports already on disk.",
+    "",
+    "This file is CONFIGURATION. No analytical function reads any of it;",
+    "changing the boundary changes WHERE the framework is applied, not HOW,",
+    "and is not evidence that it has been validated anywhere new."
+  ],
+
+  "experiment_name": "karbi_anglong_real",
+  "seed": 42,
+  "deterministic": true,
+
+  "study_area": {
+    "name": "Karbi_Anglong",
+    "boundary": "data/boundaries/karbi_anglong_bbox.geojson",
+    "crs": "EPSG:4326",
+    "name_property": "",
+    "select": {},
+    "all_touched": false
+  },
+
+  "real_data": {
+    "sensors": ["LANDSAT5_TM", "LANDSAT7_ETM", "LANDSAT8_OLI",
+                "LANDSAT9_OLI2"],
+    "harmonisation_reference": "LANDSAT7_ETM",
+    "harmonisation_overrides": {},
+    "index": "ndvi",
+    "extra_indices": [],
+
+    "start_year": 1990,
+    "end_year": 2025,
+    "temporal_unit": "annual",
+    "window_start": "10-15",
+    "window_end": "12-31",
+    "composite_statistic": "median",
+    "composite_percentile": 90.0,
+    "min_observations_per_composite": 1,
+
+    "mask_bits": ["fill", "dilated_cloud", "cirrus", "cloud", "cloud_shadow",
+                  "snow"],
+    "mask_saturated": true,
+    "strict_cloud_confidence": false,
+    "max_scene_cloud_cover": 80.0,
+
+    "rainfall_product": "UCSB-CHG/CHIRPS/DAILY",
+    "rainfall_variable": "precipitation",
+    "rainfall_units": "mm",
+    "rainfall_accumulation": "hydrological_year",
+    "rainfall_resampling": "bilinear",
+
+    "target_resolution_m": 30.0,
+    "target_crs": "auto",
+
+    "cache_dir": "data/processed",
+    "raw_dir": "data/raw",
+    "composite_dir": "data/composites",
+    "metadata_dir": "data/metadata",
+    "ndvi_cube": "",
+    "rain_cube": "",
+    "reuse_cache": true,
+
+    "allow_interpolation": false,
+    "max_interpolation_gap": 2,
+
+    "reference": {
+      "path": "",
+      "validation_path": "",
+      "classes": {},
+      "degradation_classes": [],
+      "source": "",
+      "provenance": "",
+      "resampling": "nearest",
+      "notes": "EMPTY ON PURPOSE. Satellite imagery supplies no degradation labels. Fill this in only with labels independent of the NDVI series; the loader rejects provenance indicating labels derived from this pipeline's own output."
+    },
+
+    "backend": "local",
+    "gee_project": "",
+    "export_target": "drive",
+    "export_folder": "land_degradation_m6",
+    "max_export_pixels": 10000000000.0
+  }
+}

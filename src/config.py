@@ -29,11 +29,164 @@ class PathConfig:
     tables: str = str(ROOT / "data" / "tables")
     results: str = str(ROOT / "results")
     legacy_outputs: str = str(ROOT / "outputs")
+    #: Study-area polygons. Tracked in version control: reproducing a study
+    #: needs the exact geometry that produced it.
+    boundaries: str = str(ROOT / "data" / "boundaries")
+    #: Real-data outputs live under their own root so that a synthetic
+    #: development run and a real-data run can never be confused for one
+    #: another by their file paths alone.
+    real_results: str = str(ROOT / "results" / "real_data")
 
     ndvi_stack: str = str(ROOT / "data" / "rasters" / "ndvi_stack.tif")
     rain_stack: str = str(ROOT / "data" / "rasters" / "rain_stack.tif")
     truth: str = str(ROOT / "data" / "rasters" / "truth_classes.tif")
     samples_csv: str = str(ROOT / "data" / "tables" / "training_samples.csv")
+
+
+# --------------------------------------------------------------------------
+# M6 real-data configuration
+#
+# The study area, the sensors, the temporal design and the acquisition
+# parameters are DATA. No analytical function reads any of this; only the
+# acquisition and preprocessing stages do. Replacing one district with
+# another is therefore a configuration change.
+# --------------------------------------------------------------------------
+@dataclass
+class StudyAreaConfig:
+    """Where the framework is being applied (M6 Part 2).
+
+    `boundary` (a polygon file) wins over `bounds` (a rectangle). Supplying
+    neither is an error: the pipeline will not invent an extent.
+
+    Nothing in the analytical pipeline reads `name`. It labels outputs.
+    """
+    name: str = ""
+    boundary: str = ""                     # GeoJSON (or shapefile via fiona)
+    #: [west, south, east, north] fallback when no polygon is available.
+    bounds: List[float] = field(default_factory=list)
+    crs: str = "EPSG:4326"
+    #: Property used to name the area when reading a multi-feature file.
+    name_property: str = ""
+    #: Property filter selecting features from a multi-feature file, e.g.
+    #: {"DISTRICT": "Karbi Anglong"}.
+    select: Dict[str, str] = field(default_factory=dict)
+    #: Pixels touched by the boundary edge count as inside. False (the
+    #: default) includes only pixels whose centre falls inside, which is the
+    #: conservative choice for area statistics.
+    all_touched: bool = False
+
+
+@dataclass
+class ReferenceLabelConfig:
+    """Independent reference labels for supervised learning (M6 Part 15).
+
+    EMPTY BY DEFAULT, AND THAT IS THE HONEST STATE. Satellite imagery does
+    not come with land-degradation labels. Until a path is configured here,
+    the real-data runner completes every unsupervised and statistical stage
+    and reports the supervised stages as BLOCKED. It does not fabricate a
+    target, and it does not fall back on the algorithmic trajectory classes:
+    those are computed from the same features a classifier would use, so
+    scoring a model against them measures self-consistency, not accuracy.
+    """
+    path: str = ""                          # raster of integer class codes
+    #: Optional second, spatially disjoint source used ONLY for evaluation.
+    validation_path: str = ""
+    #: Code -> name. Must be compatible with the study's class scheme.
+    classes: Dict[int, str] = field(default_factory=dict)
+    #: Which of those codes count as degradation for the binary comparison.
+    degradation_classes: List[int] = field(default_factory=list)
+    source: str = ""                        # dataset name, vintage, citation
+    #: How the labels were produced: "field", "expert_interpretation",
+    #: "published_dataset", "ancillary_landcover". A label set derived from
+    #: the NDVI series itself is circular and is rejected by the loader.
+    provenance: str = ""
+    resampling: str = "nearest"             # categorical: never interpolate
+    notes: str = ""
+
+
+@dataclass
+class RealDataConfig:
+    """Real remote-sensing acquisition and preprocessing (M6 Parts 3-13)."""
+
+    # ---- what to acquire ------------------------------------------------
+    sensors: List[str] = field(default_factory=lambda: [
+        "LANDSAT5_TM", "LANDSAT7_ETM", "LANDSAT8_OLI", "LANDSAT9_OLI2"])
+    #: Reference sensor whose NDVI scale the others are harmonised onto.
+    harmonisation_reference: str = "LANDSAT7_ETM"
+    #: sensor key -> {"gain":…, "bias":…, "reference": "citation"}. Required
+    #: for any sensor without a built-in transform (e.g. Sentinel-2).
+    harmonisation_overrides: Dict[str, Dict[str, float]] = field(
+        default_factory=dict)
+    index: str = "ndvi"
+    #: Additional indices to export alongside NDVI. NDVI stays primary.
+    extra_indices: List[str] = field(default_factory=list)
+
+    # ---- temporal design (Part 5) ---------------------------------------
+    start_year: int = 1990
+    end_year: int = 2025
+    temporal_unit: str = "annual"           # annual | seasonal | monthly
+    window_start: str = "10-15"             # post-monsoon, least cloudy
+    window_end: str = "12-31"
+    composite_statistic: str = "median"     # see compositing.py for why
+    composite_percentile: float = 90.0
+    min_observations_per_composite: int = 1
+
+    # ---- quality masking (Part 6) ---------------------------------------
+    mask_bits: List[str] = field(default_factory=lambda: [
+        "fill", "dilated_cloud", "cirrus", "cloud", "cloud_shadow", "snow"])
+    mask_saturated: bool = True
+    strict_cloud_confidence: bool = False
+    max_scene_cloud_cover: float = 80.0     # scene-level prefilter, percent
+
+    # ---- rainfall (Part 9) ----------------------------------------------
+    rainfall_product: str = "UCSB-CHG/CHIRPS/DAILY"
+    rainfall_variable: str = "precipitation"
+    rainfall_units: str = "mm"
+    #: Accumulation period feeding each composite. "hydrological_year"
+    #: accumulates the 12 months ENDING at the composite window, which is the
+    #: rainfall that actually grew the vegetation being observed; "calendar_year"
+    #: reproduces the repository's earlier Jan-Dec convention.
+    rainfall_accumulation: str = "hydrological_year"
+    rainfall_resampling: str = "bilinear"
+
+    # ---- output grid (Part 10) ------------------------------------------
+    target_resolution_m: float = 30.0
+    #: Analysis CRS. "auto" picks the appropriate UTM zone for the study
+    #: area's centroid, so pixel areas are equal-area-ish and block CV blocks
+    #: are square on the ground. An explicit EPSG code overrides it.
+    target_crs: str = "auto"
+
+    # ---- storage and caching (Part 27) ----------------------------------
+    cache_dir: str = str(ROOT / "data" / "processed")
+    raw_dir: str = str(ROOT / "data" / "raw")
+    composite_dir: str = str(ROOT / "data" / "composites")
+    metadata_dir: str = str(ROOT / "data" / "metadata")
+    #: Prepared cubes to load. Set by the acquisition step; the loader reads
+    #: these and never downloads anything itself.
+    ndvi_cube: str = ""
+    rain_cube: str = ""
+    reuse_cache: bool = True
+
+    # ---- missing data (Part 13) -----------------------------------------
+    #: Interpolation is off by default and inherits QualityConfig's gap cap
+    #: when enabled. Every filled value is recorded in an interpolation mask
+    #: written alongside the dataset.
+    allow_interpolation: bool = False
+    max_interpolation_gap: int = 2
+
+    # ---- reference labels (Part 15) -------------------------------------
+    reference: ReferenceLabelConfig = field(
+        default_factory=ReferenceLabelConfig)
+
+    # ---- acquisition backend (Part 4) -----------------------------------
+    #: "local" reads cubes already on disk. "gee" drives an Earth Engine
+    #: export; it needs `earthengine-api` and a completed `earthengine
+    #: authenticate`, and it never stores a credential in the repository.
+    backend: str = "local"
+    gee_project: str = ""                   # EE Cloud project id, no secret
+    export_target: str = "drive"            # drive | local
+    export_folder: str = "land_degradation_m6"
+    max_export_pixels: float = 1e10
 
 
 @dataclass
@@ -190,9 +343,15 @@ class TrajectoryConfig:
     # regained drop is called a recovery; otherwise ordinary noise in a
     # stable series is read as a disturbance-and-recovery cycle.
     require_significant_breakpoint: bool = True
+    # Split a significant decline by whether it survives climate
+    # adjustment. This is the distinction the research question turns on:
+    # without it, a drier run of years is labelled the same as persistent
+    # degradation. Set False to recover the pre-M5 pooled behaviour.
+    require_climate_adjustment: bool = True
     # Evaluated in this order; the first matching rule wins.
     priority: List[str] = field(default_factory=lambda: [
-        "Recovering", "Degrading", "Cyclic", "Stable"])
+        "Recovering", "Degrading", "Rainfall-associated decline",
+        "Disturbed", "Cyclic", "Stable"])
 
 
 @dataclass
@@ -449,6 +608,10 @@ class Config:
     recovery: RecoveryConfig = field(default_factory=RecoveryConfig)
     model: ModelConfig = field(default_factory=ModelConfig)
     research: ResearchConfig = field(default_factory=ResearchConfig)
+    #: M6. Empty by default: a bare Config still describes the synthetic
+    #: development dataset, so every M1-M5 entry point is unaffected.
+    study_area: StudyAreaConfig = field(default_factory=StudyAreaConfig)
+    real_data: RealDataConfig = field(default_factory=RealDataConfig)
 
     classes: Dict[int, str] = field(default_factory=lambda: {
         1: "Stable high-NDVI",
@@ -466,6 +629,11 @@ class Config:
         d = asdict(self)
         d["classes"] = {str(k): v for k, v in self.classes.items()}
         d["class_colors"] = {str(k): v for k, v in self.class_colors.items()}
+        # JSON object keys are strings; integer class codes must survive a
+        # save/load round trip, so they are stringified here and restored in
+        # `from_dict`.
+        d["real_data"]["reference"]["classes"] = {
+            str(k): v for k, v in self.real_data.reference.classes.items()}
         return d
 
     def save(self, path) -> Path:
@@ -486,8 +654,26 @@ class Config:
                "recovery": RecoveryConfig, "model": ModelConfig}
         kw = {}
         for k, v in raw.items():
+            # JSON has no comments, and a real-data configuration needs them:
+            # a reader has to know that the boundary is a bounding box and
+            # that the reference block is empty on purpose. Keys beginning
+            # with "_" are documentation and are skipped. Any OTHER unknown
+            # key still raises, so a typo is not silently ignored.
+            if k.startswith("_"):
+                continue
             if k == "research":
                 kw[k] = ResearchConfig.from_dict(v)
+            elif k == "study_area":
+                kw[k] = StudyAreaConfig(**v)
+            elif k == "real_data":
+                real = dict(v)
+                reference = dict(real.get("reference") or {})
+                if reference:
+                    reference["classes"] = {
+                        int(code): name for code, name
+                        in (reference.get("classes") or {}).items()}
+                real["reference"] = ReferenceLabelConfig(**reference)
+                kw[k] = RealDataConfig(**real)
             elif k in sub:
                 kw[k] = sub[k](**v)
             elif k in ("classes", "class_colors"):
