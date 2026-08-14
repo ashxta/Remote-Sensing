@@ -1,0 +1,174 @@
+{
+  "n_samples": 98,
+  "accuracy": 0.8571428571428571,
+  "cohen_kappa": 0.4869109947643979,
+  "precision_macro": 0.8401253918495297,
+  "recall_macro": 0.7012987012987013,
+  "f1_macro": 0.7385670731707317,
+  "precision_weighted": 0.8526645768025078,
+  "recall_weighted": 0.8571428571428571,
+  "f1_weighted": 0.8391768292682927,
+  "per_class": {
+    "0": {
+      "precision": 0.8620689655172413,
+      "recall": 0.974025974025974,
+      "f1": 0.9146341463414634,
+      "support": 77
+    },
+    "1": {
+      "precision": 0.8181818181818182,
+      "recall": 0.42857142857142855,
+      "f1": 0.5625,
+      "support": 21
+    }
+  },
+  "confusion_matrix": [
+    [
+      75,
+      2
+    ],
+    [
+      12,
+      9
+    ]
+  ],
+  "labels": [
+    0,
+    1
+  ],
+  "validation": "spatial_block_cv",
+  "model": "cnn_1d",
+  "fold_metrics": [
+    {
+      "n_samples": 41,
+      "accuracy": 0.8780487804878049,
+      "cohen_kappa": 0.5956607495069033,
+      "precision_macro": 0.8595238095238096,
+      "recall_macro": 0.7621527777777778,
+      "f1_macro": 0.7960199004975124,
+      "precision_weighted": 0.8742160278745644,
+      "recall_weighted": 0.8780487804878049,
+      "f1_weighted": 0.8685839097196942,
+      "per_class": {
+        "0": {
+          "precision": 0.8857142857142857,
+          "recall": 0.96875,
+          "f1": 0.9253731343283582,
+          "support": 32
+        },
+        "1": {
+          "precision": 0.8333333333333334,
+          "recall": 0.5555555555555556,
+          "f1": 0.6666666666666666,
+          "support": 9
+        }
+      },
+      "confusion_matrix": [
+        [
+          31,
+          1
+        ],
+        [
+          4,
+          5
+        ]
+      ],
+      "labels": [
+        0,
+        1
+      ],
+      "fold": 0,
+      "n_train": 103,
+      "n_validation": 46,
+      "n_test": 41,
+      "validation_folds": [
+        3
+      ],
+      "best_epoch": 6,
+      "epochs_run": 6
+    },
+    {
+      "n_samples": 57,
+      "accuracy": 0.8421052631578947,
+      "cohen_kappa": 0.39575971731448767,
+      "precision_macro": 0.823076923076923,
+      "recall_macro": 0.6555555555555556,
+      "f1_macro": 0.6889023650697392,
+      "precision_weighted": 0.8364372469635627,
+      "recall_weighted": 0.8421052631578947,
+      "f1_weighted": 0.8152947559924675,
+      "per_class": {
+        "0": {
+          "precision": 0.8461538461538461,
+          "recall": 0.9777777777777777,
+          "f1": 0.9072164948453608,
+          "support": 45
+        },
+        "1": {
+          "precision": 0.8,
+          "recall": 0.3333333333333333,
+          "f1": 0.47058823529411764,
+          "support": 12
+        }
+      },
+      "confusion_matrix": [
+        [
+          44,
+          1
+        ],
+        [
+          8,
+          4
+        ]
+      ],
+      "labels": [
+        0,
+        1
+      ],
+      "fold": 1,
+      "n_train": 87,
+      "n_validation": 46,
+      "n_test": 57,
+      "validation_folds": [
+        2
+      ],
+      "best_epoch": 6,
+      "epochs_run": 6
+    }
+  ],
+  "fold_summary": {
+    "accuracy_mean": 0.8600770218228497,
+    "accuracy_std": 0.017971758664955095,
+    "precision_macro_mean": 0.8413003663003663,
+    "precision_macro_std": 0.01822344322344327,
+    "recall_macro_mean": 0.7088541666666667,
+    "recall_macro_std": 0.053298611111111116,
+    "f1_macro_mean": 0.7424611327836258,
+    "f1_macro_std": 0.05355876771388657,
+    "precision_weighted_mean": 0.8553266374190636,
+    "precision_weighted_std": 0.018889390455500865,
+    "recall_weighted_mean": 0.8600770218228497,
+    "recall_weighted_std": 0.017971758664955095,
+    "f1_weighted_mean": 0.8419393328560809,
+    "f1_weighted_std": 0.02664457686361338,
+    "cohen_kappa_mean": 0.4957102334106955,
+    "cohen_kappa_std": 0.09995051609620781,
+    "n_folds": 2
+  },
+  "n_evaluated": 98,
+  "uncertainty": {
+    "n_samples": 98,
+    "n_uncertain": 22,
+    "uncertain_fraction": 0.22448979591836735,
+    "confidence_threshold": 0.6,
+    "margin_threshold": 0.15,
+    "mean_confidence": 0.7027906507861857,
+    "median_confidence": 0.7037656009197235,
+    "mean_margin": 0.4055813068942148,
+    "mean_normalised_entropy": 0.8321352794693927,
+    "disclaimer": "Model confidence estimates conditional on the training data, feature set and model family. They are relative scores, not calibrated probabilities and not certainty about the land surface.",
+    "accuracy_confident_subset": 0.9605263157894737,
+    "accuracy_uncertain_subset": 0.5,
+    "confidence_is_informative": true
+  }
+}

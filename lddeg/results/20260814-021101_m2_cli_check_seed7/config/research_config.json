@@ -1,0 +1,150 @@
+{
+  "samples_per_class": 30,
+  "max_analysis_pixels": 3000,
+  "features": {
+    "groups": [
+      "vegetation",
+      "trend",
+      "restrend",
+      "cyclicity",
+      "disturbance",
+      "recovery",
+      "rainfall"
+    ],
+    "require_finite": false
+  },
+  "trajectory": {
+    "alpha": 0.05,
+    "require_trend_significance": true,
+    "cyclicity_enrichment_threshold": 2.0,
+    "require_periodic_flag": true,
+    "recovery_fraction_threshold": 0.8,
+    "min_disturbance_magnitude": 0.05,
+    "require_significant_breakpoint": true,
+    "priority": [
+      "Recovering",
+      "Degrading",
+      "Cyclic",
+      "Stable"
+    ]
+  },
+  "spatial_cv": {
+    "block_size": 8,
+    "n_folds": 3,
+    "seed": 7,
+    "buffer_blocks": 0
+  },
+  "model": {
+    "seed": 7,
+    "n_estimators": 40,
+    "min_samples_leaf": 2,
+    "max_features": "sqrt",
+    "class_weight": "none",
+    "imputation_strategy": "median",
+    "n_jobs": 1,
+    "block_cv": {
+      "block_size": 8,
+      "n_folds": 3,
+      "seed": 7,
+      "buffer_blocks": 0
+    }
+  },
+  "ablation": {
+    "experiments": [
+      {
+        "id": "A",
+        "name": "A_basic_vegetation",
+        "groups": [
+          "vegetation"
+        ]
+      },
+      {
+        "id": "B",
+        "name": "B_basic_trend",
+        "groups": [
+          "vegetation",
+          "trend"
+        ]
+      },
+      {
+        "id": "C",
+        "name": "C_add_restrend",
+        "groups": [
+          "vegetation",
+          "trend",
+          "restrend"
+        ]
+      },
+      {
+        "id": "D",
+        "name": "D_add_cyclicity",
+        "groups": [
+          "vegetation",
+          "trend",
+          "restrend",
+          "cyclicity"
+        ]
+      },
+      {
+        "id": "E",
+        "name": "E_add_disturbance",
+        "groups": [
+          "vegetation",
+          "trend",
+          "restrend",
+          "cyclicity",
+          "disturbance",
+          "recovery"
+        ]
+      },
+      {
+        "id": "F",
+        "name": "F_full",
+        "groups": [
+          "vegetation",
+          "trend",
+          "restrend",
+          "cyclicity",
+          "disturbance",
+          "recovery",
+          "rainfall"
+        ]
+      }
+    ]
+  },
+  "sensitivity": {
+    "parameters": [
+      {
+        "path": "trend.alpha",
+        "values": [
+          0.01,
+          0.05,
+          0.1
+        ],
+        "description": "Mann-Kendall significance level"
+      },
+      {
+        "path": "trend.min_obs",
+        "values": [
+          8,
+          10,
+          14
+        ],
+        "description": "minimum valid observations for a trend test"
+      }
+    ],
+    "evaluate_model": true,
+    "n_estimators": 20,
+    "enabled": true
+  },
+  "holdout": {
+    "cutoff_index": -1,
+    "cutoff_fraction": 0.65,
+    "min_history": 12,
+    "min_future": 12,
+    "spatially_separated": true,
+    "enabled": false
+  },
+  "random_split_baseline": true,
+  "baseline_test_size": 0.3
+}

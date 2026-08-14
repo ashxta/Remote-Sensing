@@ -1,0 +1,14 @@
+{
+  "shape": [
+    36,
+    200,
+    300
+  ],
+  "ndvi_min": 0.12942823767662048,
+  "ndvi_max": 0.949999988079071,
+  "ndvi_out_of_physical_range": 0,
+  "rain_nan": 0,
+  "ndvi_nan": 0,
+  "crs_present": true,
+  "transform_present": true
+}

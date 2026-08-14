@@ -1,0 +1,148 @@
+{
+  "question": "Does multi-temporal trajectory analysis improve detection of land degradation compared with conventional trend analysis?",
+  "protocol": "All methods share the same spatial block folds, samples and metric code. The binary degradation task is the like-for-like comparison, because the conventional trend rule cannot attempt a multiclass problem.",
+  "rows": [
+    {
+      "method": "baseline_trend",
+      "task": "binary_degradation",
+      "representation": "Mann-Kendall p + Sen slope sign",
+      "validation": "fixed rule (no training)",
+      "n_features": 2,
+      "accuracy": 0.9683333333333334,
+      "f1_macro": 0.9532248203874134,
+      "f1_weighted": 0.9691751566353054,
+      "precision_macro": 0.9316546762589928,
+      "recall_macro": 0.9802083333333333,
+      "cohen_kappa": 0.9065880039331367,
+      "fold_f1_macro_mean": 0.9540131644444036,
+      "fold_f1_macro_std": 0.02021236646050926,
+      "n_evaluated": 600
+    },
+    {
+      "method": "rf_basic",
+      "task": "binary_degradation",
+      "representation": "basic vegetation features",
+      "validation": "spatial_block_cv",
+      "n_features": 9,
+      "accuracy": 0.9983333333333333,
+      "f1_macro": 0.9974039347695343,
+      "f1_weighted": 0.9983359221872715,
+      "precision_macro": 0.9958677685950413,
+      "recall_macro": 0.9989583333333334,
+      "cohen_kappa": 0.9948078920041536,
+      "fold_f1_macro_mean": 0.9977834118073161,
+      "fold_f1_macro_std": 0.0044331763853675986,
+      "n_evaluated": 600
+    },
+    {
+      "method": "rf_basic",
+      "task": "multiclass_trajectory",
+      "representation": "basic vegetation features",
+      "validation": "spatial_block_cv",
+      "n_features": 9,
+      "accuracy": 0.9783333333333334,
+      "f1_macro": 0.9783319154122996,
+      "f1_weighted": 0.9783319154122997,
+      "precision_macro": 0.9783971213307645,
+      "recall_macro": 0.9783333333333335,
+      "cohen_kappa": 0.9729166666666667,
+      "fold_f1_macro_mean": 0.9786232679546891,
+      "fold_f1_macro_std": 0.010954827449843607,
+      "n_evaluated": 600
+    },
+    {
+      "method": "rf_proposed",
+      "task": "binary_degradation",
+      "representation": "proposed framework: trend + RESTREND + cyclicity + breakpoint/recovery",
+      "validation": "spatial_block_cv",
+      "n_features": 45,
+      "accuracy": 0.9966666666666667,
+      "f1_macro": 0.9947916666666667,
+      "f1_weighted": 0.9966666666666667,
+      "precision_macro": 0.9947916666666667,
+      "recall_macro": 0.9947916666666667,
+      "cohen_kappa": 0.9895833333333334,
+      "fold_f1_macro_mean": 0.9955026455026456,
+      "fold_f1_macro_std": 0.008994708994709022,
+      "n_evaluated": 600
+    },
+    {
+      "method": "rf_proposed",
+      "task": "multiclass_trajectory",
+      "representation": "proposed framework: trend + RESTREND + cyclicity + breakpoint/recovery",
+      "validation": "spatial_block_cv",
+      "n_features": 45,
+      "accuracy": 0.9966666666666667,
+      "f1_macro": 0.9966666377309792,
+      "f1_weighted": 0.9966666377309792,
+      "precision_macro": 0.9966804407713499,
+      "recall_macro": 0.9966666666666667,
+      "cohen_kappa": 0.9958333333333333,
+      "fold_f1_macro_mean": 0.9969794704578062,
+      "fold_f1_macro_std": 0.003699380426682629,
+      "n_evaluated": 600
+    },
+    {
+      "method": "cnn_1d",
+      "task": "binary_degradation",
+      "representation": "learned from the raw NDVI sequence",
+      "validation": "spatial_block_cv",
+      "n_features": 36,
+      "accuracy": 1.0,
+      "f1_macro": 1.0,
+      "f1_weighted": 1.0,
+      "precision_macro": 1.0,
+      "recall_macro": 1.0,
+      "cohen_kappa": 1.0,
+      "fold_f1_macro_mean": 1.0,
+      "fold_f1_macro_std": 0.0,
+      "n_evaluated": 600
+    },
+    {
+      "method": "cnn_1d",
+      "task": "multiclass_trajectory",
+      "representation": "learned from the raw NDVI sequence",
+      "validation": "spatial_block_cv",
+      "n_features": 36,
+      "accuracy": 0.9966666666666667,
+      "f1_macro": 0.996666435169109,
+      "f1_weighted": 0.996666435169109,
+      "precision_macro": 0.9967213114754099,
+      "recall_macro": 0.9966666666666667,
+      "cohen_kappa": 0.9958333333333333,
+      "fold_f1_macro_mean": 0.9969219588817644,
+      "fold_f1_macro_std": 0.004043275092714305,
+      "n_evaluated": 600
+    }
+  ],
+  "skipped": [],
+  "conclusion": {
+    "available": true,
+    "task": "binary_degradation",
+    "best_method": "cnn_1d",
+    "best_f1_macro": 1.0,
+    "ranking": [
+      {
+        "method": "cnn_1d",
+        "f1_macro": 1.0
+      },
+      {
+        "method": "rf_basic",
+        "f1_macro": 0.9974039347695343
+      },
+      {
+        "method": "rf_proposed",
+        "f1_macro": 0.9947916666666667
+      },
+      {
+        "method": "baseline_trend",
+        "f1_macro": 0.9532248203874134
+      }
+    ],
+    "baseline_f1_macro": 0.9532248203874134,
+    "improvement_over_baseline": 0.04677517961258659,
+    "exceeds_fold_spread": true,
+    "statement": "The best learned method exceeds the conventional Mann-Kendall/Sen rule by 0.0468 macro F1 on the binary degradation task, which is larger than the across-fold standard deviation of 0.0000."
+  },
+  "caveat": "Development/testing outputs on synthetic data: this compares methods on a generator, not on a landscape."
+}

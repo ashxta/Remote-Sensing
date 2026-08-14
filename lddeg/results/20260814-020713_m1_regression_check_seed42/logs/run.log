@@ -1,0 +1,34 @@
+02:07:13 | INFO    | experiment 20260814-020713_m1_regression_check_seed42 started (seed=42)
+02:07:13 | INFO    | STAGE 1/7  loading stacks
+02:07:13 | INFO    | grid 200x300, 36 time steps, CRS=EPSG:4326, res=(0.005166666666666667, 0.00525)
+02:07:13 | INFO    | STAGE 2/7  data-quality assessment
+02:07:13 | INFO    | metrics written: data_quality.json
+02:07:13 | INFO    | usable pixels: 60000/60000 (100.0%)
+02:07:13 | INFO    | STAGE 3/7  trajectory statistics
+02:07:13 | INFO    | MK cross-check vs pymannkendall: PASS (max |dz|=0.00e+00)
+02:07:28 | INFO    | features: mean, std, cv, amp, sen, mk_z, restrend, cyc_score, cyc_enrichment, cyc_period, has_break, break_t, break_dslope, break_gain, has_disturbance, recovery_fraction, recovery_slope, disturbance_magnitude
+02:07:28 | INFO    | RESTREND interpretable (rainfall relation significant) in 50264/60000 pixels (83.8%)
+02:07:28 | INFO    | periodicity detected in 479 pixels (NOT proof of any specific land-use practice)
+02:07:28 | INFO    | STAGE 4/7  recovery analysis
+02:07:28 | INFO    | metrics written: recovery.json
+02:07:28 | INFO    |   NO_DISTURBANCE     12398
+02:07:28 | INFO    |   RECOVERED          30630
+02:07:28 | INFO    |   RECOVERING         371
+02:07:28 | INFO    |   NOT_RECOVERING     12
+02:07:28 | INFO    |   INSUFFICIENT_DATA  16589
+02:07:28 | INFO    | STAGE 5/7  trajectory classification
+02:07:29 | INFO    | RF  {'Accuracy': 0.9964, 'Kappa': 0.9955, 'F1_macro': 0.9967}
+02:07:30 | INFO    | table written: rf_feature_importance.csv
+02:07:30 | INFO    | top features: restrend, std, sen, cv
+02:07:30 | INFO    | STAGE 6/7  method comparison
+02:07:30 | INFO    |   Stable high-NDVI           MK   4.8% | RESTREND   3.2% | RF 100.0%
+02:07:30 | INFO    |   Cropland / grassland       MK   2.1% | RESTREND   1.2% | RF  99.4%
+02:07:30 | INFO    |   Cyclic / periodic          MK  10.0% | RESTREND   2.1% | RF  99.0%
+02:07:30 | INFO    |   Declining                  MK  99.4% | RESTREND  99.5% | RF 100.0%
+02:07:30 | INFO    |   Recovering                 MK   0.0% | RESTREND   0.0% | RF 100.0%
+02:07:30 | INFO    | median detected period: 7.2 time steps
+02:07:30 | INFO    | STAGE 7/7  georeferenced outputs
+02:07:31 | INFO    | wrote 11 georeferenced layers
+02:07:31 | INFO    | metrics written: results.json
+02:07:31 | INFO    | table written: feature_summary.csv
+02:07:31 | INFO    | EXPERIMENT COMPLETE -> D:\Projects\land_degradation_M1 (1)\lddeg\results\20260814-020713_m1_regression_check_seed42

@@ -1,0 +1,52 @@
+{
+  "experiment": "C",
+  "name": "C_add_restrend",
+  "feature_groups": [
+    "vegetation",
+    "trend",
+    "restrend"
+  ],
+  "features": [
+    "mean",
+    "median_ndvi",
+    "minimum_ndvi",
+    "maximum_ndvi",
+    "std",
+    "cv",
+    "amp",
+    "sen",
+    "ols_slope",
+    "mk_z",
+    "mk_p_value",
+    "mk_tau",
+    "mk_significant",
+    "trend_direction",
+    "restrend",
+    "restrend_p_value",
+    "restrend_r2",
+    "restrend_beta",
+    "restrend_significant"
+  ],
+  "n_features": 19,
+  "model": {
+    "seed": 42,
+    "n_estimators": 40,
+    "min_samples_leaf": 2,
+    "max_features": "sqrt",
+    "class_weight": "none",
+    "imputation_strategy": "median",
+    "n_jobs": 1,
+    "block_cv": {
+      "block_size": 8,
+      "n_folds": 4,
+      "seed": 42,
+      "buffer_blocks": 0
+    }
+  },
+  "validation": {
+    "block_size": 8,
+    "n_folds": 4,
+    "seed": 42,
+    "buffer_blocks": 0
+  }
+}

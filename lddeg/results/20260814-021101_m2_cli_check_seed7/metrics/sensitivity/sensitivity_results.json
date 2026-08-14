@@ -1,0 +1,229 @@
+{
+  "baseline": {
+    "n_pixels": 143,
+    "mean_sen_slope": -0.00019277719547972083,
+    "significant_trend_fraction": 0.41258740425109863,
+    "periodic_fraction": 0.0139860138297081,
+    "restrend_significant_fraction": 0.440559446811676,
+    "break_fraction": 1.0,
+    "disturbance_fraction": 0.7762237787246704,
+    "trajectory_stable_fraction": 0.5804195804195804,
+    "trajectory_degrading_fraction": 0.2517482517482518,
+    "trajectory_recovering_fraction": 0.055944055944055944,
+    "trajectory_cyclic_fraction": 0.006993006993006993,
+    "trajectory_uncertain_fraction": 0.1048951048951049,
+    "accuracy": 1.0,
+    "f1_macro": 1.0,
+    "f1_weighted": 1.0,
+    "fold_f1_macro_mean": 1.0,
+    "fold_f1_macro_std": 0.0
+  },
+  "parameters": [
+    {
+      "path": "trend.alpha",
+      "values": [
+        0.01,
+        0.05,
+        0.1
+      ],
+      "description": "Mann-Kendall significance level"
+    },
+    {
+      "path": "trend.min_obs",
+      "values": [
+        8,
+        10,
+        14
+      ],
+      "description": "minimum valid observations for a trend test"
+    }
+  ],
+  "model_evaluated": true,
+  "spread_by_parameter": {
+    "trend.alpha": {
+      "value": {
+        "min": 0.01,
+        "max": 0.1,
+        "range": 0.09000000000000001
+      },
+      "n_pixels": {
+        "min": 143.0,
+        "max": 143.0,
+        "range": 0.0
+      },
+      "mean_sen_slope": {
+        "min": -0.00019277719547972083,
+        "max": -0.00019277719547972083,
+        "range": 0.0
+      },
+      "significant_trend_fraction": {
+        "min": 0.3776223659515381,
+        "max": 0.440559446811676,
+        "range": 0.06293708086013794
+      },
+      "periodic_fraction": {
+        "min": 0.0139860138297081,
+        "max": 0.0139860138297081,
+        "range": 0.0
+      },
+      "restrend_significant_fraction": {
+        "min": 0.440559446811676,
+        "max": 0.440559446811676,
+        "range": 0.0
+      },
+      "break_fraction": {
+        "min": 1.0,
+        "max": 1.0,
+        "range": 0.0
+      },
+      "disturbance_fraction": {
+        "min": 0.7762237787246704,
+        "max": 0.7762237787246704,
+        "range": 0.0
+      },
+      "trajectory_stable_fraction": {
+        "min": 0.5524475524475524,
+        "max": 0.6083916083916084,
+        "range": 0.05594405594405605
+      },
+      "trajectory_degrading_fraction": {
+        "min": 0.22377622377622378,
+        "max": 0.25874125874125875,
+        "range": 0.034965034965034975
+      },
+      "trajectory_recovering_fraction": {
+        "min": 0.055944055944055944,
+        "max": 0.055944055944055944,
+        "range": 0.0
+      },
+      "trajectory_cyclic_fraction": {
+        "min": 0.006993006993006993,
+        "max": 0.013986013986013986,
+        "range": 0.006993006993006993
+      },
+      "trajectory_uncertain_fraction": {
+        "min": 0.0979020979020979,
+        "max": 0.1258741258741259,
+        "range": 0.027972027972027982
+      },
+      "accuracy": {
+        "min": 1.0,
+        "max": 1.0,
+        "range": 0.0
+      },
+      "f1_macro": {
+        "min": 1.0,
+        "max": 1.0,
+        "range": 0.0
+      },
+      "f1_weighted": {
+        "min": 1.0,
+        "max": 1.0,
+        "range": 0.0
+      },
+      "fold_f1_macro_mean": {
+        "min": 1.0,
+        "max": 1.0,
+        "range": 0.0
+      },
+      "fold_f1_macro_std": {
+        "min": 0.0,
+        "max": 0.0,
+        "range": 0.0
+      }
+    },
+    "trend.min_obs": {
+      "value": {
+        "min": 8.0,
+        "max": 14.0,
+        "range": 6.0
+      },
+      "n_pixels": {
+        "min": 143.0,
+        "max": 143.0,
+        "range": 0.0
+      },
+      "mean_sen_slope": {
+        "min": -0.00019277719547972083,
+        "max": -0.00019277719547972083,
+        "range": 0.0
+      },
+      "significant_trend_fraction": {
+        "min": 0.41258740425109863,
+        "max": 0.41258740425109863,
+        "range": 0.0
+      },
+      "periodic_fraction": {
+        "min": 0.0139860138297081,
+        "max": 0.0139860138297081,
+        "range": 0.0
+      },
+      "restrend_significant_fraction": {
+        "min": 0.440559446811676,
+        "max": 0.440559446811676,
+        "range": 0.0
+      },
+      "break_fraction": {
+        "min": 1.0,
+        "max": 1.0,
+        "range": 0.0
+      },
+      "disturbance_fraction": {
+        "min": 0.7762237787246704,
+        "max": 0.7762237787246704,
+        "range": 0.0
+      },
+      "trajectory_stable_fraction": {
+        "min": 0.5804195804195804,
+        "max": 0.5804195804195804,
+        "range": 0.0
+      },
+      "trajectory_degrading_fraction": {
+        "min": 0.2517482517482518,
+        "max": 0.2517482517482518,
+        "range": 0.0
+      },
+      "trajectory_recovering_fraction": {
+        "min": 0.055944055944055944,
+        "max": 0.055944055944055944,
+        "range": 0.0
+      },
+      "trajectory_cyclic_fraction": {
+        "min": 0.006993006993006993,
+        "max": 0.006993006993006993,
+        "range": 0.0
+      },
+      "trajectory_uncertain_fraction": {
+        "min": 0.1048951048951049,
+        "max": 0.1048951048951049,
+        "range": 0.0
+      },
+      "accuracy": {
+        "min": 1.0,
+        "max": 1.0,
+        "range": 0.0
+      },
+      "f1_macro": {
+        "min": 1.0,
+        "max": 1.0,
+        "range": 0.0
+      },
+      "f1_weighted": {
+        "min": 1.0,
+        "max": 1.0,
+        "range": 0.0
+      },
+      "fold_f1_macro_mean": {
+        "min": 1.0,
+        "max": 1.0,
+        "range": 0.0
+      },
+      "fold_f1_macro_std": {
+        "min": 0.0,
+        "max": 0.0,
+        "range": 0.0
+      }
+    }
+  },
+  "note": "Scenarios are reported, not optimised: no parameter is selected by comparing test-set metrics. Development/testing outputs on synthetic data."
+}

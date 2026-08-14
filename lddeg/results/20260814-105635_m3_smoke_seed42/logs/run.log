@@ -1,0 +1,55 @@
+10:56:37 | INFO    | experiment 20260814-105635_m3_smoke_seed42 started (seed=42)
+10:56:37 | INFO    | STAGE 1/10  dataset, validity checks and quality gating
+10:56:37 | INFO    | metrics written: dataset_metadata.json
+10:56:38 | INFO    | metrics written: data_quality.json
+10:56:38 | INFO    | grid 200x300, 36 steps; analysing 3000 pixels
+10:56:38 | INFO    | STAGE 2/10  temporal analysis and feature engineering
+10:56:38 | INFO    | table written: feature_dictionary.csv
+10:56:38 | INFO    | table written: feature_summary.csv
+10:56:38 | INFO    | metrics written: trajectory_summary.json
+10:56:39 | INFO    | 45 modelling features; trajectory classes: Stable 2700, Degrading 176, Recovering 12, Cyclic 20, Uncertain / Other 92
+10:56:39 | INFO    | STAGE 3/10  sampling and spatial block design
+10:56:39 | INFO    | 190 model samples over 4 spatial folds (block_size=8)
+10:56:39 | INFO    | STAGE 4/10  leakage audit
+10:56:39 | INFO    | leakage audit: 18 checks, all passed
+10:56:39 | INFO    | STAGE 5/10  cyclicity surrogate-data significance
+10:56:39 | INFO    | metrics written: cyclicity_surrogate_test.json
+10:56:39 | INFO    | surrogate test: 0.0% of sampled pixels significant at alpha=0.05 (threshold rule flags 2.1%); agreement 97.9%
+10:56:39 | INFO    | STAGE 6/10  Random Forest, spatial block CV and uncertainty
+10:56:40 | INFO    | metrics written: spatial_cv_metrics.json
+10:56:40 | INFO    | RF spatial CV: accuracy 1.0000 | macro F1 1.0000 | fold macro F1 1.0000 +/- 0.0000
+10:56:40 | INFO    | uncertainty: 0.5% flagged; accuracy confident 1.0000 vs flagged 1.0
+10:56:40 | INFO    | metrics written: random_split_baseline_metrics.json
+10:56:40 | INFO    | table written: spatial_buffer_sensitivity.csv
+10:56:40 | INFO    | buffer sensitivity: buffer=0 macro F1 1.0000
+10:56:41 | INFO    | STAGE 7/10  explainability
+10:56:43 | INFO    |   permutation importance (held-out folds), top 5: amp, break_dslope, break_gain, break_t, breakpoint_index
+10:56:43 | INFO    |   SHAP: unavailable (optional dependency)
+10:56:43 | INFO    | STAGE 8/10  experiment matrix: baseline vs RF vs CNN vs proposed
+10:56:43 | INFO    |   matrix baseline_trend (MK+Sen rule): macro F1 0.9621, recall on degradation 1.0000
+10:56:44 | INFO    |   matrix rf_basic: binary macro F1 0.9842 | multiclass macro F1 0.9701
+10:56:44 | INFO    |   matrix rf_proposed: binary macro F1 0.9920 | multiclass macro F1 1.0000
+10:56:46 | INFO    |   cnn fold 0: 103 train / 46 validation / 41 test | best epoch 6 | macro F1 0.7960
+10:56:46 | INFO    |   cnn fold 1: 87 train / 46 validation / 57 test | best epoch 6 | macro F1 0.6889
+10:56:46 | INFO    |   cnn fold 0: 103 train / 46 validation / 41 test | best epoch 6 | macro F1 0.5335
+10:56:46 | INFO    |   cnn fold 1: 87 train / 46 validation / 57 test | best epoch 6 | macro F1 0.7429
+10:56:46 | INFO    |   matrix cnn_1d: binary macro F1 0.7386 | multiclass macro F1 0.6573
+10:56:46 | INFO    | table written: experiment_matrix.csv
+10:56:47 | INFO    | STAGE 9/10  ablation, sensitivity and temporal holdout
+10:56:47 | INFO    |   ablation A_basic_vegetation    9 features | macro F1 0.9701 (fold mean 0.9683 +/- 0.0112)
+10:56:47 | INFO    |   ablation B_basic_trend        14 features | macro F1 0.9643 (fold mean 0.9595 +/- 0.0354)
+10:56:47 | INFO    |   ablation C_add_restrend       19 features | macro F1 1.0000 (fold mean 1.0000 +/- 0.0000)
+10:56:48 | INFO    |   ablation D_add_cyclicity      25 features | macro F1 1.0000 (fold mean 1.0000 +/- 0.0000)
+10:56:48 | INFO    |   ablation E_add_disturbance    40 features | macro F1 1.0000 (fold mean 1.0000 +/- 0.0000)
+10:56:48 | INFO    |   ablation F_full               45 features | macro F1 1.0000 (fold mean 1.0000 +/- 0.0000)
+10:56:48 | INFO    | table written: ablation_comparison.csv
+10:56:49 | INFO    |   sensitivity trend.alpha                            = 0.01   | periodic 0.021 | degrading 0.200 | macro F1 1.0000
+10:56:49 | INFO    |   sensitivity trend.alpha                            = 0.05   | periodic 0.021 | degrading 0.237 | macro F1 1.0000
+10:56:49 | INFO    |   sensitivity trend.alpha                            = 0.1    | periodic 0.021 | degrading 0.263 | macro F1 1.0000
+10:56:49 | INFO    |   sensitivity trend.min_obs                          = 8      | periodic 0.021 | degrading 0.237 | macro F1 1.0000
+10:56:50 | INFO    |   sensitivity trend.min_obs                          = 10     | periodic 0.021 | degrading 0.237 | macro F1 1.0000
+10:56:50 | INFO    |   sensitivity trend.min_obs                          = 14     | periodic 0.021 | degrading 0.237 | macro F1 1.0000
+10:56:50 | INFO    | temporal holdout cutoff=23 (23 historical / 13 later steps): accuracy 0.6341, macro F1 0.6230 - NOT a temporal-generalization result on synthetic data
+10:56:50 | INFO    | STAGE 10/10  saving experiment record
+10:56:50 | INFO    | metrics written: results.json
+10:56:50 | INFO    | EXPERIMENT COMPLETE -> D:\Projects\land_degradation_M1 (1)\lddeg\results\20260814-105635_m3_smoke_seed42

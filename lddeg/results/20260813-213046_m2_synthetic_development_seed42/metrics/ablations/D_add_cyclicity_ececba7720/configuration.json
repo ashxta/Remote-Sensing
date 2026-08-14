@@ -1,0 +1,25 @@
+{
+  "id": "D_add_cyclicity_ececba7720",
+  "feature_set": [
+    "mean",
+    "std",
+    "cv",
+    "amp",
+    "sen",
+    "mk_z",
+    "restrend",
+    "cyc_score",
+    "cyc_enrichment",
+    "cyc_period"
+  ],
+  "model": {
+    "seed": 42,
+    "n_estimators": 50,
+    "min_samples_leaf": 2,
+    "block_cv": {
+      "block_size": 8,
+      "n_folds": 5,
+      "seed": 42
+    }
+  }
+}

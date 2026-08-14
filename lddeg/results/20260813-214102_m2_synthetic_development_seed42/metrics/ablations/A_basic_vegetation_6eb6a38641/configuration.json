@@ -1,0 +1,20 @@
+{
+  "id": "A_basic_vegetation_6eb6a38641",
+  "feature_set": [
+    "mean",
+    "std",
+    "cv",
+    "amp",
+    "sen"
+  ],
+  "model": {
+    "seed": 42,
+    "n_estimators": 3,
+    "min_samples_leaf": 2,
+    "block_cv": {
+      "block_size": 8,
+      "n_folds": 2,
+      "seed": 42
+    }
+  }
+}

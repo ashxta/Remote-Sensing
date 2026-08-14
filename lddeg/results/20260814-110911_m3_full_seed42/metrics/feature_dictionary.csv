@@ -1,0 +1,48 @@
+feature,group,description,source
+mean,vegetation,Mean NDVI over valid observations,classify.build_features
+median_ndvi,vegetation,Median NDVI (outlier-robust central level),features.build_feature_table
+minimum_ndvi,vegetation,Minimum observed NDVI,features.build_feature_table
+maximum_ndvi,vegetation,Maximum observed NDVI,features.build_feature_table
+std,vegetation,Standard deviation of NDVI (temporal variability),classify.build_features
+cv,vegetation,"Coefficient of variation, std/mean",classify.build_features
+amp,vegetation,"Amplitude, 95th minus 5th percentile",classify.build_features
+sen,vegetation,Theil-Sen slope of NDVI per time step,timeseries.sens_slope
+ols_slope,vegetation,Ordinary least-squares temporal slope of NDVI per time step,features.build_feature_table
+mk_z,trend,"Mann-Kendall Z, Hamed-Rao autocorrelation adjusted when enabled in TrendConfig",timeseries.mann_kendall + hamed_rao_correction
+mk_p_value,trend,Two-sided Mann-Kendall p-value (autocorrelation adjusted when enabled),timeseries.mann_kendall + hamed_rao_correction
+mk_tau,trend,Kendall's tau rank correlation with time,timeseries.mann_kendall
+mk_significant,trend,1 where the Mann-Kendall p-value is below TrendConfig.alpha,features.build_feature_table
+trend_direction,trend,"Sign of the Theil-Sen slope (-1, 0, +1)",features.build_feature_table
+rain_mean,rainfall,Mean rainfall over valid steps,features.build_feature_table
+rain_std,rainfall,Standard deviation of rainfall,features.build_feature_table
+rain_cv,rainfall,Rainfall coefficient of variation,features.build_feature_table
+rain_sen,rainfall,Theil-Sen slope of rainfall per time step,timeseries.sens_slope
+rain_ndvi_correlation,rainfall,Pearson correlation of NDVI and rainfall over commonly valid steps,features.build_feature_table
+restrend,restrend,Climate-adjusted (residual) NDVI trend; interpretable only where restrend_significant,timeseries.restrend
+restrend_p_value,restrend,p-value of the climate-adjusted trend,timeseries.restrend
+restrend_r2,restrend,Partial r2 of the NDVI~rainfall relationship controlling for time,timeseries.restrend
+restrend_beta,restrend,NDVI sensitivity to rainfall,timeseries.restrend
+restrend_significant,restrend,1 where the residual trend is significant AND the rainfall relation is valid,features.build_feature_table
+cyc_score,cyclicity,Share of non-DC spectral power inside the configured period band,timeseries.cyclicity
+cyc_enrichment,cyclicity,Band power fraction divided by its flat-noise expectation; 1.0 = white noise,timeseries.cyclicity
+cyc_period,cyclicity,Dominant period in time steps (0 where undefined),timeseries.cyclicity
+cyc_band_power,cyclicity,Absolute spectral power inside the period band,timeseries.cyclicity
+cyc_total_power,cyclicity,Absolute non-DC spectral power of the series,timeseries.cyclicity
+cyclicity_periodic,cyclicity,1 where enrichment reaches CyclicityConfig.periodicity_threshold; periodicity is NOT attribution of any land use,timeseries.cyclicity
+has_break,disturbance,1 where an admissible structural break exists,timeseries.best_breakpoint
+break_t,disturbance,Break position as a fraction of the record (0 where none),timeseries.best_breakpoint
+break_dslope,disturbance,Post minus pre segment slope (0 where none),timeseries.best_breakpoint
+break_gain,disturbance,Variance explained by the two-segment fit (0 where none),timeseries.best_breakpoint
+breakpoint_index,disturbance,Break time index (-1 where none),timeseries.best_breakpoint
+breakpoint_significant,disturbance,1 where the selection-adjusted Chow test is significant,timeseries.best_breakpoint
+pre_breakpoint_level,disturbance,Mean NDVI over the pre-break window (0 where no break),recovery.analyze
+post_breakpoint_minimum,disturbance,Minimum NDVI after the break (0 where no break),recovery.analyze
+disturbance_magnitude,disturbance,Pre-break level minus post-break trough (0 where no disturbance),recovery.analyze
+has_disturbance,recovery,1 where a disturbance exceeding RecoveryConfig.min_disturbance_magnitude exists,recovery.analyze
+recovery_magnitude,recovery,Last value minus trough (0 where no disturbance),recovery.analyze
+recovery_fraction,recovery,Recovered share of the disturbance magnitude (0 where no disturbance),recovery.analyze
+recovery_duration,recovery,Steps from trough to the first crossing of the recovery threshold; 0 where the threshold was never reached (see recovery_status),recovery.analyze
+recovery_slope,recovery,OLS slope from the trough to the end of the record (0 where no disturbance),recovery.analyze
+recovery_status,recovery,"Categorical code: 0 none, 1 recovered, 2 recovering, 3 not recovering, 4 insufficient data",recovery.analyze
+n_valid_ndvi,diagnostic,Number of finite NDVI observations,features.build_feature_table
+n_valid_pairs,diagnostic,Number of steps where NDVI and rainfall are both finite,features.build_feature_table

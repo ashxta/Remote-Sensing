@@ -1,0 +1,3 @@
+method,accuracy,f1_macro,f1_weighted,std
+spatial block CV (primary),1.0,1.0,1.0,0.0
+random pixel split (baseline),1.0,1.0,1.0,0.0

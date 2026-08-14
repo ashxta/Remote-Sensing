@@ -1,0 +1,33 @@
+{
+  "id": "E_add_disturbance_209a358086",
+  "feature_set": [
+    "mean",
+    "std",
+    "cv",
+    "amp",
+    "sen",
+    "mk_z",
+    "restrend",
+    "cyc_score",
+    "cyc_enrichment",
+    "cyc_period",
+    "has_break",
+    "break_t",
+    "break_dslope",
+    "break_gain",
+    "has_disturbance",
+    "recovery_fraction",
+    "recovery_slope",
+    "disturbance_magnitude"
+  ],
+  "model": {
+    "seed": 42,
+    "n_estimators": 5,
+    "min_samples_leaf": 2,
+    "block_cv": {
+      "block_size": 8,
+      "n_folds": 5,
+      "seed": 42
+    }
+  }
+}

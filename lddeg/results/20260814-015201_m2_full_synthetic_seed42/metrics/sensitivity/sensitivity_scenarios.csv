@@ -1,0 +1,25 @@
+parameter,value,baseline_value,is_baseline,description
+trend.alpha,0.01,0.05,False,Mann-Kendall significance level
+trend.alpha,0.05,0.05,True,Mann-Kendall significance level
+trend.alpha,0.1,0.05,False,Mann-Kendall significance level
+trend.min_obs,8.0,10.0,False,minimum valid observations for a trend test
+trend.min_obs,10.0,10.0,True,minimum valid observations for a trend test
+trend.min_obs,14.0,10.0,False,minimum valid observations for a trend test
+restrend.min_r2,0.05,0.1,False,minimum NDVI~rainfall partial r2 for a valid RESTREND
+restrend.min_r2,0.1,0.1,True,minimum NDVI~rainfall partial r2 for a valid RESTREND
+restrend.min_r2,0.2,0.1,False,minimum NDVI~rainfall partial r2 for a valid RESTREND
+cyclicity.min_period,3.0,4.0,False,lower edge of the periodicity band (time steps)
+cyclicity.min_period,4.0,4.0,True,lower edge of the periodicity band (time steps)
+cyclicity.min_period,5.0,4.0,False,lower edge of the periodicity band (time steps)
+cyclicity.max_period,10.0,12.0,False,upper edge of the periodicity band (time steps)
+cyclicity.max_period,12.0,12.0,True,upper edge of the periodicity band (time steps)
+cyclicity.max_period,14.0,12.0,False,upper edge of the periodicity band (time steps)
+cyclicity.periodicity_threshold,1.5,2.0,False,spectral enrichment required to call a series cyclic
+cyclicity.periodicity_threshold,2.0,2.0,True,spectral enrichment required to call a series cyclic
+cyclicity.periodicity_threshold,3.0,2.0,False,spectral enrichment required to call a series cyclic
+breakpoint.min_variance_gain,0.03,0.05,False,variance a two-segment fit must explain to be a break
+breakpoint.min_variance_gain,0.05,0.05,True,variance a two-segment fit must explain to be a break
+breakpoint.min_variance_gain,0.1,0.05,False,variance a two-segment fit must explain to be a break
+recovery.recovery_threshold,0.7,0.8,False,share of pre-disturbance level counted as recovered
+recovery.recovery_threshold,0.8,0.8,True,share of pre-disturbance level counted as recovered
+recovery.recovery_threshold,0.9,0.8,False,share of pre-disturbance level counted as recovered

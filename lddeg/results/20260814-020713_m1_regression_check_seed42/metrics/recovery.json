@@ -1,0 +1,13 @@
+{
+  "n_pixels": 60000,
+  "status_counts": {
+    "NO_DISTURBANCE": 12398,
+    "RECOVERED": 30630,
+    "RECOVERING": 371,
+    "NOT_RECOVERING": 12,
+    "INSUFFICIENT_DATA": 16589
+  },
+  "n_disturbed": 47602,
+  "median_recovery_duration": 2.0,
+  "median_recovery_fraction": 0.7932438692444143
+}

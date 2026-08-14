@@ -1,0 +1,47 @@
+{
+  "n_pixels": 3000,
+  "counts": {
+    "Stable": 2665,
+    "Degrading": 216,
+    "Recovering": 11,
+    "Cyclic": 22,
+    "Uncertain / Other": 86
+  },
+  "fractions": {
+    "Stable": 0.8883333333333333,
+    "Degrading": 0.072,
+    "Recovering": 0.0036666666666666666,
+    "Cyclic": 0.007333333333333333,
+    "Uncertain / Other": 0.028666666666666667
+  },
+  "definitions": {
+    "priority": [
+      "Recovering",
+      "Degrading",
+      "Cyclic",
+      "Stable"
+    ],
+    "classes": [
+      "Stable",
+      "Degrading",
+      "Recovering",
+      "Cyclic",
+      "Uncertain / Other"
+    ],
+    "codes": {
+      "Stable": 1,
+      "Degrading": 2,
+      "Recovering": 3,
+      "Cyclic": 4,
+      "Uncertain / Other": 5
+    },
+    "rules": {
+      "Degrading": "Sen slope < 0 AND Mann-Kendall p < 0.05",
+      "Cyclic": "spectral enrichment >= 2.0 AND the estimator's periodic flag is set",
+      "Recovering": "a disturbance of at least 0.05 NDVI with recovery fraction >= 0.8 AND a significant structural break",
+      "Stable": "no degrading, cyclic, recovering or significant increasing signal",
+      "Uncertain / Other": "core statistics not finite, or no rule matched"
+    },
+    "interpretation_limit": "Analytical trajectory classes derived from NDVI shape only. They are not verified land-cover classes; cyclic does not mean jhum and a negative trend does not prove degradation."
+  }
+}

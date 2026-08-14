@@ -1,0 +1,31 @@
+{
+  "n_checks": 2,
+  "n_failed": 0,
+  "passed": true,
+  "context": {
+    "cutoff": 23
+  },
+  "checks": [
+    {
+      "check": "temporal_separation",
+      "passed": true,
+      "statement": "historical indices end at 22 and later indices start at 23 around cutoff 23",
+      "evidence": {
+        "cutoff": 23,
+        "n_historical": 23,
+        "n_later": 13,
+        "n_time": 36
+      }
+    },
+    {
+      "check": "no_lookahead",
+      "passed": true,
+      "statement": "historical features are unchanged when every observation from the cutoff onwards is corrupted",
+      "evidence": {
+        "cutoff": 23,
+        "n_features": 47
+      }
+    }
+  ],
+  "note": "Executable leakage assertions, re-evaluated on every run. A passing audit constrains the experiment design; it does not by itself make a result generalise."
+}

@@ -1,0 +1,56 @@
+{
+  "contract": "StandardizedDataset",
+  "requirements": [
+    {
+      "id": "analysis_ready_cube",
+      "requirement": "Deliver NDVI and rainfall as aligned (T, H, W) cubes on one grid, one CRS and one time axis.",
+      "why": "The pipeline never reprojects or resamples; misalignment would silently pair a pixel with another pixel's rainfall."
+    },
+    {
+      "id": "nan_for_missing",
+      "requirement": "Encode every masked observation (cloud, shadow, snow, SLC-off gap, sensor outage, scene edge) as NaN.",
+      "why": "Sentinel values such as -9999 or 0 are valid numbers to a regression and would be fitted as real vegetation."
+    },
+    {
+      "id": "physical_units",
+      "requirement": "Apply the sensor scale factor so NDVI is in [-1, 1]; state rainfall units and keep them constant.",
+      "why": "Scaled integers (e.g. NDVI x 10000) pass every shape check and silently corrupt every threshold in the configuration."
+    },
+    {
+      "id": "sensor_harmonisation",
+      "requirement": "Harmonise across sensors (Landsat 5/7/8/9, Sentinel-2) before stacking, and record the method used.",
+      "why": "An unharmonised sensor change is a step in the series that breakpoint detection will report as a real disturbance."
+    },
+    {
+      "id": "consistent_compositing",
+      "requirement": "Use one compositing rule (e.g. annual post-monsoon maximum-NDVI composite) for the whole record.",
+      "why": "A changing composite window changes the phenological stage being measured, which appears as a trend."
+    },
+    {
+      "id": "declared_time_axis",
+      "requirement": "Provide the observation times, one per band, ordered, with the interval documented.",
+      "why": "Cyclicity periods and Sen slopes are expressed in time steps; an irregular axis makes both meaningless."
+    },
+    {
+      "id": "study_area_boundary",
+      "requirement": "Supply the study-area boundary as configuration (vector file or bounding box), not hard-coded in the analysis.",
+      "why": "No analytical function may assume a region; the pipeline must run over any area the loader supplies."
+    },
+    {
+      "id": "quality_mask_provenance",
+      "requirement": "Record which QA/cloud mask was applied and its version.",
+      "why": "Missingness is a covariate: a mask change alters valid-observation counts and therefore trend detectability."
+    },
+    {
+      "id": "independent_reference_labels",
+      "requirement": "Obtain reference labels from ground or independent ancillary data, never from the same NDVI series.",
+      "why": "Labels derived from the features are circular; the classifier would be scored on reproducing its own inputs."
+    },
+    {
+      "id": "rainfall_alignment",
+      "requirement": "Resample CHIRPS (or equivalent) onto the NDVI grid and aggregate to the same period, recording the method.",
+      "why": "RESTREND regresses NDVI on rainfall pixel by pixel; a mismatched grid or accumulation window invalidates the correction."
+    }
+  ],
+  "note": "What an M6 real-data loader must satisfy. The analytical pipeline consumes StandardizedDataset only, so meeting this contract is sufficient to replace the synthetic source without changing the analysis."
+}

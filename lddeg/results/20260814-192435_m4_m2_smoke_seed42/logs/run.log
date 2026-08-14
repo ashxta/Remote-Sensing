@@ -1,0 +1,46 @@
+19:24:40 | INFO    | experiment 20260814-192435_m4_m2_smoke_seed42 started (seed=42)
+19:24:40 | INFO    | STAGE 1/8  data, quality control, features, trajectories, folds
+19:24:40 | INFO    | data source: raster_stack (synthetic development stacks)
+19:24:40 | INFO    | grid 200x300, 36 time steps, CRS=EPSG:4326
+19:24:40 | INFO    | usable 60000/60000 pixels; analysing 3000
+19:24:43 | INFO    | 45 modelling features over 3000 pixels
+19:24:43 | INFO    | trajectory classes: Stable 2700, Degrading 176, Recovering 12, Cyclic 20, Uncertain / Other 92
+19:24:43 | INFO    | 150 model samples (30 per class requested) over 3 spatial folds, block_size=8
+19:24:43 | INFO    | metrics written: dataset_metadata.json
+19:24:43 | INFO    | metrics written: data_quality.json
+19:24:43 | INFO    | metrics written: trajectory_summary.json
+19:24:43 | INFO    | metrics written: experiment_summary.json
+19:24:43 | INFO    | table written: feature_dictionary.csv
+19:24:43 | INFO    | table written: feature_summary.csv
+19:24:43 | INFO    | STAGE 2/8  georeferenced temporal-analysis layers
+19:24:46 | INFO    | wrote 11 georeferenced layers and 6 maps
+19:24:48 | INFO    | STAGE 3/8  spatial block cross-validation design
+19:24:48 | INFO    | block_size=8, folds=3, buffer_blocks=0
+19:24:48 | INFO    | STAGE 4/8  Random Forest with spatial block cross-validation
+19:24:48 | INFO    | metrics written: spatial_cv_metrics.json
+19:24:49 | INFO    | table written: rf_feature_importance.csv
+19:24:50 | INFO    | spatial CV: accuracy 1.0000 | macro F1 1.0000 | weighted F1 1.0000
+19:24:50 | INFO    | fold macro F1 1.0000 +/- 0.0000 over 3 folds
+19:24:50 | INFO    | metrics written: random_split_baseline_metrics.json
+19:24:50 | INFO    | random-split baseline (optimistic): accuracy 1.0000 | macro F1 1.0000
+19:24:50 | INFO    | table written: validation_comparison.csv
+19:24:50 | INFO    | STAGE 5/8  map-wide prediction, confidence and vector exports
+19:24:52 | INFO    | STAGE 6/8  ablation study A-F
+19:24:52 | INFO    |   ablation A_basic_vegetation    9 features | macro F1 0.9474 (fold mean 0.9530 +/- 0.0210)
+19:24:53 | INFO    |   ablation B_basic_trend        14 features | macro F1 0.9735 (fold mean 0.9691 +/- 0.0149)
+19:24:53 | INFO    |   ablation C_add_restrend       19 features | macro F1 0.9933 (fold mean 0.9933 +/- 0.0095)
+19:24:54 | INFO    |   ablation D_add_cyclicity      25 features | macro F1 1.0000 (fold mean 1.0000 +/- 0.0000)
+19:24:54 | INFO    |   ablation E_add_disturbance    40 features | macro F1 0.9933 (fold mean 0.9927 +/- 0.0104)
+19:24:55 | INFO    |   ablation F_full               45 features | macro F1 1.0000 (fold mean 1.0000 +/- 0.0000)
+19:24:55 | INFO    | table written: ablation_comparison.csv
+19:24:55 | INFO    | STAGE 7/8  sensitivity analysis
+19:24:56 | INFO    |   sensitivity trend.alpha                            = 0.01   | periodic 0.007 | degrading 0.200 | macro F1 1.0000
+19:24:56 | INFO    |   sensitivity trend.alpha                            = 0.05   | periodic 0.007 | degrading 0.220 | macro F1 1.0000
+19:24:57 | INFO    |   sensitivity trend.alpha                            = 0.1    | periodic 0.007 | degrading 0.227 | macro F1 1.0000
+19:24:57 | INFO    |   sensitivity trend.min_obs                          = 8      | periodic 0.007 | degrading 0.220 | macro F1 1.0000
+19:24:58 | INFO    |   sensitivity trend.min_obs                          = 10     | periodic 0.007 | degrading 0.220 | macro F1 1.0000
+19:24:58 | INFO    |   sensitivity trend.min_obs                          = 14     | periodic 0.007 | degrading 0.220 | macro F1 1.0000
+19:24:59 | INFO    | STAGE 8/8  temporal holdout
+19:24:59 | INFO    | temporal holdout cutoff=23 (23 historical / 13 later steps): accuracy 0.7308, macro F1 0.7232 - NOT a temporal-generalization result on synthetic data
+19:24:59 | INFO    | metrics written: results.json
+19:24:59 | INFO    | EXPERIMENT COMPLETE -> D:\Projects\land_degradation_M1 (1)\lddeg\results\20260814-192435_m4_m2_smoke_seed42

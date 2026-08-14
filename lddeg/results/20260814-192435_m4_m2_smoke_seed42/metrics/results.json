@@ -1,0 +1,499 @@
+{
+  "data_status": "Synthetic data are used for development and pipeline validation. They are not real observations and must not be interpreted as real-world research findings. No output in this directory measures any real location.",
+  "dataset": {
+    "shape": [
+      36,
+      200,
+      300
+    ],
+    "n_time_steps": 36,
+    "n_pixels": 60000,
+    "ndvi_min": 0.12942823767662048,
+    "ndvi_max": 0.949999988079071,
+    "ndvi_out_of_physical_range": 0,
+    "rain_min": 1102.929931640625,
+    "rain_max": 2735.715087890625,
+    "rain_negative_values": 0,
+    "ndvi_nan": 0,
+    "rain_nan": 0,
+    "pixels_with_sufficient_observations": 60000,
+    "min_valid_obs_required": 10,
+    "mean_valid_observations": 36.0,
+    "crs_present": true,
+    "transform_present": true,
+    "georeference": {
+      "crs": "EPSG:4326",
+      "transform": [
+        0.005166666666666667,
+        0.0,
+        92.3,
+        0.0,
+        -0.00525,
+        26.6
+      ],
+      "pixel_width": 0.005166666666666667,
+      "pixel_height": 0.00525,
+      "origin_x": 92.3,
+      "origin_y": 26.6
+    },
+    "warnings": [],
+    "strict": false,
+    "source": {
+      "source": "raster_stack",
+      "description": "synthetic development stacks",
+      "ndvi_path": "D:\\Projects\\land_degradation_M1 (1)\\lddeg\\data\\rasters\\ndvi_stack.tif",
+      "rain_path": "D:\\Projects\\land_degradation_M1 (1)\\lddeg\\data\\rasters\\rain_stack.tif",
+      "truth_path": "D:\\Projects\\land_degradation_M1 (1)\\lddeg\\data\\rasters\\truth_classes.tif",
+      "ndvi_nodata": null,
+      "rain_nodata": null,
+      "synthetic": true
+    },
+    "n_time_labels": 36,
+    "has_reference_labels": true
+  },
+  "data_quality": {
+    "n_pixels": 60000,
+    "n_obs_per_pixel": 36,
+    "n_usable": 60000,
+    "usable_fraction": 1.0,
+    "mean_valid_observations": 36.0,
+    "mean_missing_fraction": 0.0,
+    "flag_counts": {
+      "OK": 60000,
+      "INSUFFICIENT_OBS": 0,
+      "TOO_MANY_MISSING": 0,
+      "CONSTANT": 0,
+      "OUT_OF_RANGE": 0
+    }
+  },
+  "trajectory": {
+    "n_pixels": 3000,
+    "counts": {
+      "Stable": 2700,
+      "Degrading": 176,
+      "Recovering": 12,
+      "Cyclic": 20,
+      "Uncertain / Other": 92
+    },
+    "fractions": {
+      "Stable": 0.9,
+      "Degrading": 0.058666666666666666,
+      "Recovering": 0.004,
+      "Cyclic": 0.006666666666666667,
+      "Uncertain / Other": 0.030666666666666665
+    },
+    "definitions": {
+      "priority": [
+        "Recovering",
+        "Degrading",
+        "Cyclic",
+        "Stable"
+      ],
+      "classes": [
+        "Stable",
+        "Degrading",
+        "Recovering",
+        "Cyclic",
+        "Uncertain / Other"
+      ],
+      "codes": {
+        "Stable": 1,
+        "Degrading": 2,
+        "Recovering": 3,
+        "Cyclic": 4,
+        "Uncertain / Other": 5
+      },
+      "rules": {
+        "Degrading": "Sen slope < 0 AND Mann-Kendall p < 0.05",
+        "Cyclic": "spectral enrichment >= 2.0 AND the estimator's periodic flag is set",
+        "Recovering": "a disturbance of at least 0.05 NDVI with recovery fraction >= 0.8 AND a significant structural break",
+        "Stable": "no degrading, cyclic, recovering or significant increasing signal",
+        "Uncertain / Other": "core statistics not finite, or no rule matched"
+      },
+      "interpretation_limit": "Analytical trajectory classes derived from NDVI shape only. They are not verified land-cover classes; cyclic does not mean jhum and a negative trend does not prove degradation."
+    }
+  },
+  "experiment": {
+    "n_time_steps": 36,
+    "grid": [
+      200,
+      300
+    ],
+    "n_pixels": 60000,
+    "n_analysed": 3000,
+    "n_model_samples": 150,
+    "n_features": 45,
+    "n_folds": 3,
+    "block_size": 8,
+    "has_reference_labels": true,
+    "notes": [
+      "analysed pixels thinned to 3000 of 60000 usable (research.max_analysis_pixels); this is a reduced-scale run"
+    ]
+  },
+  "spatial_block_cv": {
+    "n_samples": 150,
+    "accuracy": 1.0,
+    "cohen_kappa": 1.0,
+    "precision_macro": 1.0,
+    "recall_macro": 1.0,
+    "f1_macro": 1.0,
+    "precision_weighted": 1.0,
+    "recall_weighted": 1.0,
+    "f1_weighted": 1.0,
+    "per_class": {
+      "1": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 30
+      },
+      "2": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 30
+      },
+      "3": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 30
+      },
+      "4": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 30
+      },
+      "5": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 30
+      }
+    },
+    "confusion_matrix": [
+      [
+        30,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        30,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        30,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        30,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        30
+      ]
+    ],
+    "labels": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "validation": "spatial_block_cv",
+    "fold_summary": {
+      "accuracy_mean": 1.0,
+      "accuracy_std": 0.0,
+      "precision_macro_mean": 1.0,
+      "precision_macro_std": 0.0,
+      "recall_macro_mean": 1.0,
+      "recall_macro_std": 0.0,
+      "f1_macro_mean": 1.0,
+      "f1_macro_std": 0.0,
+      "precision_weighted_mean": 1.0,
+      "precision_weighted_std": 0.0,
+      "recall_weighted_mean": 1.0,
+      "recall_weighted_std": 0.0,
+      "f1_weighted_mean": 1.0,
+      "f1_weighted_std": 0.0,
+      "cohen_kappa_mean": 1.0,
+      "cohen_kappa_std": 0.0,
+      "n_folds": 3
+    },
+    "n_evaluated": 150,
+    "n_unevaluated": 0,
+    "fold_accuracy_mean": 1.0,
+    "fold_accuracy_std": 0.0,
+    "uncertainty": {
+      "n_samples": 150,
+      "n_uncertain": 2,
+      "uncertain_fraction": 0.013333333333333334,
+      "confidence_threshold": 0.6,
+      "margin_threshold": 0.15,
+      "mean_confidence": 0.9080444444444443,
+      "median_confidence": 0.95,
+      "mean_margin": 0.8478722222222221,
+      "mean_normalised_entropy": 0.19391048273948566,
+      "disclaimer": "Model confidence estimates conditional on the training data, feature set and model family. They are relative scores, not calibrated probabilities and not certainty about the land surface.",
+      "accuracy_confident_subset": 1.0,
+      "accuracy_uncertain_subset": 1.0,
+      "confidence_is_informative": false
+    }
+  },
+  "random_split_baseline": {
+    "n_samples": 45,
+    "accuracy": 1.0,
+    "cohen_kappa": 1.0,
+    "precision_macro": 1.0,
+    "recall_macro": 1.0,
+    "f1_macro": 1.0,
+    "precision_weighted": 1.0,
+    "recall_weighted": 1.0,
+    "f1_weighted": 1.0,
+    "per_class": {
+      "1": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 9
+      },
+      "2": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 9
+      },
+      "3": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 9
+      },
+      "4": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 9
+      },
+      "5": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 9
+      }
+    },
+    "confusion_matrix": [
+      [
+        9,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        9,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        9,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        9,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        9
+      ]
+    ],
+    "labels": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "validation": "random_pixel_split_baseline",
+    "test_size": 0.3,
+    "caveat": "Random pixel splitting is spatially optimistic; the spatial block CV result is the primary validation."
+  },
+  "map_uncertainty": {
+    "n_samples": 3000,
+    "n_uncertain": 15,
+    "uncertain_fraction": 0.005,
+    "confidence_threshold": 0.6,
+    "margin_threshold": 0.15,
+    "mean_confidence": 0.9392901388888889,
+    "median_confidence": 0.975,
+    "mean_margin": 0.894271527777778,
+    "mean_normalised_entropy": 0.13149473319593408,
+    "disclaimer": "Model confidence estimates conditional on the training data, feature set and model family. They are relative scores, not calibrated probabilities and not certainty about the land surface."
+  },
+  "ablation": [
+    {
+      "experiment": "A",
+      "experiment_id": "A_basic_vegetation_dd0854a29f",
+      "feature_set": "A_basic_vegetation",
+      "feature_groups": "vegetation",
+      "n_features": 9,
+      "n_evaluated": 150,
+      "accuracy": 0.9466666666666667,
+      "precision_macro": 0.9513725490196079,
+      "recall_macro": 0.9466666666666667,
+      "f1_macro": 0.9473809523809524,
+      "f1_weighted": 0.9473809523809524,
+      "cohen_kappa": 0.9333333333333333,
+      "fold_f1_macro_mean": 0.9529692215664246,
+      "fold_f1_macro_std": 0.020970134697976418,
+      "fold_accuracy_mean": 0.9513338989441932,
+      "fold_accuracy_std": 0.021155687123644
+    },
+    {
+      "experiment": "B",
+      "experiment_id": "B_basic_trend_6836f6e44e",
+      "feature_set": "B_basic_trend",
+      "feature_groups": "vegetation+trend",
+      "n_features": 14,
+      "n_evaluated": 150,
+      "accuracy": 0.9733333333333334,
+      "precision_macro": 0.9743534482758621,
+      "recall_macro": 0.9733333333333334,
+      "f1_macro": 0.9735374521596502,
+      "f1_weighted": 0.9735374521596502,
+      "cohen_kappa": 0.9666666666666667,
+      "fold_f1_macro_mean": 0.9690567501219838,
+      "fold_f1_macro_std": 0.01487671529717246,
+      "fold_accuracy_mean": 0.9721672322775264,
+      "fold_accuracy_std": 0.00938959693247591
+    },
+    {
+      "experiment": "C",
+      "experiment_id": "C_add_restrend_e85680e379",
+      "feature_set": "C_add_restrend",
+      "feature_groups": "vegetation+trend+restrend",
+      "n_features": 19,
+      "n_evaluated": 150,
+      "accuracy": 0.9933333333333333,
+      "precision_macro": 0.9935483870967742,
+      "recall_macro": 0.9933333333333334,
+      "f1_macro": 0.9933314809669354,
+      "f1_weighted": 0.9933314809669352,
+      "cohen_kappa": 0.9916666666666667,
+      "fold_f1_macro_mean": 0.9933166248955723,
+      "fold_f1_macro_std": 0.009451719715108456,
+      "fold_accuracy_mean": 0.9901960784313726,
+      "fold_accuracy_std": 0.013864838846795053
+    },
+    {
+      "experiment": "D",
+      "experiment_id": "D_add_cyclicity_0b93a305f1",
+      "feature_set": "D_add_cyclicity",
+      "feature_groups": "vegetation+trend+restrend+cyclicity",
+      "n_features": 25,
+      "n_evaluated": 150,
+      "accuracy": 1.0,
+      "precision_macro": 1.0,
+      "recall_macro": 1.0,
+      "f1_macro": 1.0,
+      "f1_weighted": 1.0,
+      "cohen_kappa": 1.0,
+      "fold_f1_macro_mean": 1.0,
+      "fold_f1_macro_std": 0.0,
+      "fold_accuracy_mean": 1.0,
+      "fold_accuracy_std": 0.0
+    },
+    {
+      "experiment": "E",
+      "experiment_id": "E_add_disturbance_480c314992",
+      "feature_set": "E_add_disturbance",
+      "feature_groups": "vegetation+trend+restrend+cyclicity+disturbance+recovery",
+      "n_features": 40,
+      "n_evaluated": 150,
+      "accuracy": 0.9933333333333333,
+      "precision_macro": 0.9935483870967742,
+      "recall_macro": 0.9933333333333334,
+      "f1_macro": 0.9933314809669354,
+      "f1_weighted": 0.9933314809669352,
+      "cohen_kappa": 0.9916666666666667,
+      "fold_f1_macro_mean": 0.9926570048309179,
+      "fold_f1_macro_std": 0.010384563356556077,
+      "fold_accuracy_mean": 0.9935897435897436,
+      "fold_accuracy_std": 0.009065471553673706
+    },
+    {
+      "experiment": "F",
+      "experiment_id": "F_full_5fd7c542f9",
+      "feature_set": "F_full",
+      "feature_groups": "vegetation+trend+restrend+cyclicity+disturbance+recovery+rainfall",
+      "n_features": 45,
+      "n_evaluated": 150,
+      "accuracy": 1.0,
+      "precision_macro": 1.0,
+      "recall_macro": 1.0,
+      "f1_macro": 1.0,
+      "f1_weighted": 1.0,
+      "cohen_kappa": 1.0,
+      "fold_f1_macro_mean": 1.0,
+      "fold_f1_macro_std": 0.0,
+      "fold_accuracy_mean": 1.0,
+      "fold_accuracy_std": 0.0
+    }
+  ],
+  "sensitivity_rows": 7,
+  "temporal_holdout": {
+    "n_samples": 52,
+    "accuracy": 0.7307692307692307,
+    "cohen_kappa": 0.667428049337597,
+    "precision_macro": 0.7938235294117646,
+    "recall_macro": 0.7554778554778555,
+    "f1_macro": 0.7232138316806509,
+    "precision_weighted": 0.8421097285067873,
+    "recall_weighted": 0.7307692307692307,
+    "f1_weighted": 0.7402257036124312,
+    "labels": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "validation": "temporal_holdout",
+    "cutoff_index": 23,
+    "n_historical_steps": 23,
+    "n_later_steps": 13,
+    "n_train": 98,
+    "n_test": 52,
+    "spatial_separation": "evaluation restricted to spatial fold 0; training uses the other folds",
+    "meaningful_on_this_dataset": false,
+    "limitation": "Synthetic pixels carry one static label for the whole record and the windows are short, so this score characterises the synthetic generator, not temporal generalization. Real multi-decadal data (M6/M7) are required before quoting a temporal-generalization result."
+  }
+}

@@ -1,0 +1,11 @@
+                      precision    recall  f1-score   support
+
+    Stable high-NDVI       1.00      1.00      1.00       180
+Cropland / grassland       0.99      0.99      0.99       180
+   Cyclic / periodic       0.99      0.99      0.99       180
+           Declining       1.00      1.00      1.00       180
+          Recovering       1.00      1.00      1.00       121
+
+            accuracy                           1.00       841
+           macro avg       1.00      1.00      1.00       841
+        weighted avg       1.00      1.00      1.00       841

@@ -1,0 +1,318 @@
+{
+  "n_samples": 600,
+  "accuracy": 1.0,
+  "cohen_kappa": 1.0,
+  "precision_macro": 1.0,
+  "recall_macro": 1.0,
+  "f1_macro": 1.0,
+  "precision_weighted": 1.0,
+  "recall_weighted": 1.0,
+  "f1_weighted": 1.0,
+  "per_class": {
+    "0": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "support": 480
+    },
+    "1": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "support": 120
+    }
+  },
+  "confusion_matrix": [
+    [
+      480,
+      0
+    ],
+    [
+      0,
+      120
+    ]
+  ],
+  "labels": [
+    0,
+    1
+  ],
+  "validation": "spatial_block_cv",
+  "model": "cnn_1d",
+  "fold_metrics": [
+    {
+      "n_samples": 90,
+      "accuracy": 1.0,
+      "cohen_kappa": 1.0,
+      "precision_macro": 1.0,
+      "recall_macro": 1.0,
+      "f1_macro": 1.0,
+      "precision_weighted": 1.0,
+      "recall_weighted": 1.0,
+      "f1_weighted": 1.0,
+      "per_class": {
+        "0": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "support": 75
+        },
+        "1": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "support": 15
+        }
+      },
+      "confusion_matrix": [
+        [
+          75,
+          0
+        ],
+        [
+          0,
+          15
+        ]
+      ],
+      "labels": [
+        0,
+        1
+      ],
+      "fold": 0,
+      "n_train": 362,
+      "n_validation": 148,
+      "n_test": 90,
+      "validation_folds": [
+        4
+      ],
+      "best_epoch": 58,
+      "epochs_run": 68
+    },
+    {
+      "n_samples": 153,
+      "accuracy": 1.0,
+      "cohen_kappa": 1.0,
+      "precision_macro": 1.0,
+      "recall_macro": 1.0,
+      "f1_macro": 1.0,
+      "precision_weighted": 1.0,
+      "recall_weighted": 1.0,
+      "f1_weighted": 1.0,
+      "per_class": {
+        "0": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "support": 126
+        },
+        "1": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "support": 27
+        }
+      },
+      "confusion_matrix": [
+        [
+          126,
+          0
+        ],
+        [
+          0,
+          27
+        ]
+      ],
+      "labels": [
+        0,
+        1
+      ],
+      "fold": 1,
+      "n_train": 358,
+      "n_validation": 89,
+      "n_test": 153,
+      "validation_folds": [
+        2
+      ],
+      "best_epoch": 43,
+      "epochs_run": 53
+    },
+    {
+      "n_samples": 89,
+      "accuracy": 1.0,
+      "cohen_kappa": 1.0,
+      "precision_macro": 1.0,
+      "recall_macro": 1.0,
+      "f1_macro": 1.0,
+      "precision_weighted": 1.0,
+      "recall_weighted": 1.0,
+      "f1_weighted": 1.0,
+      "per_class": {
+        "0": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "support": 68
+        },
+        "1": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "support": 21
+        }
+      },
+      "confusion_matrix": [
+        [
+          68,
+          0
+        ],
+        [
+          0,
+          21
+        ]
+      ],
+      "labels": [
+        0,
+        1
+      ],
+      "fold": 2,
+      "n_train": 358,
+      "n_validation": 153,
+      "n_test": 89,
+      "validation_folds": [
+        1
+      ],
+      "best_epoch": 61,
+      "epochs_run": 71
+    },
+    {
+      "n_samples": 120,
+      "accuracy": 1.0,
+      "cohen_kappa": 1.0,
+      "precision_macro": 1.0,
+      "recall_macro": 1.0,
+      "f1_macro": 1.0,
+      "precision_weighted": 1.0,
+      "recall_weighted": 1.0,
+      "f1_weighted": 1.0,
+      "per_class": {
+        "0": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "support": 98
+        },
+        "1": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "support": 22
+        }
+      },
+      "confusion_matrix": [
+        [
+          98,
+          0
+        ],
+        [
+          0,
+          22
+        ]
+      ],
+      "labels": [
+        0,
+        1
+      ],
+      "fold": 3,
+      "n_train": 391,
+      "n_validation": 89,
+      "n_test": 120,
+      "validation_folds": [
+        2
+      ],
+      "best_epoch": 50,
+      "epochs_run": 60
+    },
+    {
+      "n_samples": 148,
+      "accuracy": 1.0,
+      "cohen_kappa": 1.0,
+      "precision_macro": 1.0,
+      "recall_macro": 1.0,
+      "f1_macro": 1.0,
+      "precision_weighted": 1.0,
+      "recall_weighted": 1.0,
+      "f1_weighted": 1.0,
+      "per_class": {
+        "0": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "support": 113
+        },
+        "1": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "support": 35
+        }
+      },
+      "confusion_matrix": [
+        [
+          113,
+          0
+        ],
+        [
+          0,
+          35
+        ]
+      ],
+      "labels": [
+        0,
+        1
+      ],
+      "fold": 4,
+      "n_train": 362,
+      "n_validation": 90,
+      "n_test": 148,
+      "validation_folds": [
+        0
+      ],
+      "best_epoch": 78,
+      "epochs_run": 80
+    }
+  ],
+  "fold_summary": {
+    "accuracy_mean": 1.0,
+    "accuracy_std": 0.0,
+    "precision_macro_mean": 1.0,
+    "precision_macro_std": 0.0,
+    "recall_macro_mean": 1.0,
+    "recall_macro_std": 0.0,
+    "f1_macro_mean": 1.0,
+    "f1_macro_std": 0.0,
+    "precision_weighted_mean": 1.0,
+    "precision_weighted_std": 0.0,
+    "recall_weighted_mean": 1.0,
+    "recall_weighted_std": 0.0,
+    "f1_weighted_mean": 1.0,
+    "f1_weighted_std": 0.0,
+    "cohen_kappa_mean": 1.0,
+    "cohen_kappa_std": 0.0,
+    "n_folds": 5
+  },
+  "n_evaluated": 600,
+  "uncertainty": {
+    "n_samples": 600,
+    "n_uncertain": 0,
+    "uncertain_fraction": 0.0,
+    "confidence_threshold": 0.6,
+    "margin_threshold": 0.15,
+    "mean_confidence": 0.9911280743281047,
+    "median_confidence": 0.9986538589000702,
+    "mean_margin": 0.9822561516202674,
+    "mean_normalised_entropy": 0.05524979738002559,
+    "disclaimer": "Model confidence estimates conditional on the training data, feature set and model family. They are relative scores, not calibrated probabilities and not certainty about the land surface.",
+    "accuracy_confident_subset": 1.0,
+    "accuracy_uncertain_subset": null,
+    "confidence_is_informative": false
+  }
+}

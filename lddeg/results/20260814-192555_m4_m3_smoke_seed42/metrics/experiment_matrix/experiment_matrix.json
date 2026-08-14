@@ -1,0 +1,192 @@
+{
+  "question": "Does multi-temporal trajectory analysis improve detection of land degradation compared with conventional trend analysis?",
+  "protocol": "All methods share the same spatial block folds, samples and metric code, and the reported comparison is re-scored on the samples EVERY method evaluated, so no two methods are compared on different test sets. The binary degradation task is the like-for-like comparison, because the conventional trend rule cannot attempt a multiclass problem.",
+  "coverage": {
+    "binary_degradation": {
+      "n_common_evaluated": 98,
+      "n_in_sample_set": 190,
+      "per_method_evaluated": {
+        "baseline_trend": 190,
+        "rf_basic": 190,
+        "rf_proposed": 190,
+        "cnn_1d": 98
+      },
+      "identical_coverage": false
+    },
+    "multiclass_trajectory": {
+      "n_common_evaluated": 98,
+      "n_in_sample_set": 190,
+      "per_method_evaluated": {
+        "rf_basic": 190,
+        "rf_proposed": 190,
+        "cnn_1d": 98
+      },
+      "identical_coverage": false
+    }
+  },
+  "rows": [
+    {
+      "method": "baseline_trend",
+      "task": "binary_degradation",
+      "representation": "Mann-Kendall p + Sen slope sign",
+      "validation": "fixed rule (no training)",
+      "n_features": 2,
+      "accuracy": 0.9693877551020408,
+      "f1_macro": 0.9567328918322295,
+      "f1_weighted": 0.9701040681173132,
+      "precision_macro": 0.9375,
+      "recall_macro": 0.9805194805194806,
+      "cohen_kappa": 0.9135802469135803,
+      "fold_f1_macro_mean": 0.9519906323185011,
+      "fold_f1_macro_std": 0.04800936768149888,
+      "n_evaluated": 98
+    },
+    {
+      "method": "rf_basic",
+      "task": "binary_degradation",
+      "representation": "basic vegetation features",
+      "validation": "spatial_block_cv",
+      "n_features": 9,
+      "accuracy": 0.9795918367346939,
+      "f1_macro": 0.9696969696969697,
+      "f1_weighted": 0.9795918367346939,
+      "precision_macro": 0.9696969696969697,
+      "recall_macro": 0.9696969696969697,
+      "cohen_kappa": 0.9393939393939394,
+      "fold_f1_macro_mean": 0.96863897503686,
+      "fold_f1_macro_std": 0.005743047435050053,
+      "n_evaluated": 98
+    },
+    {
+      "method": "rf_proposed",
+      "task": "binary_degradation",
+      "representation": "proposed framework: trend + RESTREND + cyclicity + breakpoint/recovery",
+      "validation": "spatial_block_cv",
+      "n_features": 45,
+      "accuracy": 1.0,
+      "f1_macro": 1.0,
+      "f1_weighted": 1.0,
+      "precision_macro": 1.0,
+      "recall_macro": 1.0,
+      "cohen_kappa": 1.0,
+      "fold_f1_macro_mean": 1.0,
+      "fold_f1_macro_std": 0.0,
+      "n_evaluated": 98
+    },
+    {
+      "method": "cnn_1d",
+      "task": "binary_degradation",
+      "representation": "learned from the raw NDVI sequence",
+      "validation": "spatial_block_cv",
+      "n_features": 36,
+      "accuracy": 0.8571428571428571,
+      "f1_macro": 0.7385670731707317,
+      "f1_weighted": 0.8391768292682927,
+      "precision_macro": 0.8401253918495297,
+      "recall_macro": 0.7012987012987013,
+      "cohen_kappa": 0.4869109947643979,
+      "fold_f1_macro_mean": 0.7424611327836258,
+      "fold_f1_macro_std": 0.05355876771388657,
+      "n_evaluated": 98
+    },
+    {
+      "method": "rf_basic",
+      "task": "multiclass_trajectory",
+      "representation": "basic vegetation features",
+      "validation": "spatial_block_cv",
+      "n_features": 9,
+      "accuracy": 0.9795918367346939,
+      "f1_macro": 0.980151190985594,
+      "f1_weighted": 0.9798910749580106,
+      "precision_macro": 0.9800000000000001,
+      "recall_macro": 0.9817805383022774,
+      "cohen_kappa": 0.974385781495034,
+      "fold_f1_macro_mean": 0.9791255632687859,
+      "fold_f1_macro_std": 0.00041407867494819284,
+      "n_evaluated": 98
+    },
+    {
+      "method": "rf_proposed",
+      "task": "multiclass_trajectory",
+      "representation": "proposed framework: trend + RESTREND + cyclicity + breakpoint/recovery",
+      "validation": "spatial_block_cv",
+      "n_features": 45,
+      "accuracy": 1.0,
+      "f1_macro": 1.0,
+      "f1_weighted": 1.0,
+      "precision_macro": 1.0,
+      "recall_macro": 1.0,
+      "cohen_kappa": 1.0,
+      "fold_f1_macro_mean": 1.0,
+      "fold_f1_macro_std": 0.0,
+      "n_evaluated": 98
+    },
+    {
+      "method": "cnn_1d",
+      "task": "multiclass_trajectory",
+      "representation": "learned from the raw NDVI sequence",
+      "validation": "spatial_block_cv",
+      "n_features": 36,
+      "accuracy": 0.7040816326530612,
+      "f1_macro": 0.6572607103041885,
+      "f1_weighted": 0.6673357254989908,
+      "precision_macro": 0.7097592332865824,
+      "recall_macro": 0.7048309178743961,
+      "cohen_kappa": 0.6302367941712204,
+      "fold_f1_macro_mean": 0.6382019647019647,
+      "fold_f1_macro_std": 0.10469547119547118,
+      "n_evaluated": 98
+    }
+  ],
+  "skipped": [],
+  "conclusion": {
+    "available": true,
+    "task": "binary_degradation",
+    "best_method": "rf_proposed",
+    "best_f1_macro": 1.0,
+    "ranking": [
+      {
+        "method": "rf_proposed",
+        "f1_macro": 1.0
+      },
+      {
+        "method": "rf_basic",
+        "f1_macro": 0.9696969696969697
+      },
+      {
+        "method": "baseline_trend",
+        "f1_macro": 0.9567328918322295
+      },
+      {
+        "method": "cnn_1d",
+        "f1_macro": 0.7385670731707317
+      }
+    ],
+    "baseline_f1_macro": 0.9567328918322295,
+    "improvement_over_baseline": 0.04326710816777046,
+    "fold_spread_used": 0.04800936768149888,
+    "exceeds_fold_spread": false,
+    "statement": "The best learned method exceeds the conventional Mann-Kendall/Sen rule by 0.0433 macro F1 on the binary degradation task, which is within the across-fold standard deviation of 0.0480 and should not be read as an improvement.",
+    "multiclass": {
+      "ranking": [
+        {
+          "method": "rf_proposed",
+          "f1_macro": 1.0
+        },
+        {
+          "method": "rf_basic",
+          "f1_macro": 0.980151190985594
+        },
+        {
+          "method": "cnn_1d",
+          "f1_macro": 0.6572607103041885
+        }
+      ],
+      "baseline_participates": false,
+      "note": "The conventional trend rule produces only a significant-decline flag, so it cannot attempt the multiclass trajectory task. Where the extra features matter is exactly here: distinguishing cyclic, recovering and stable trajectories, which a monotonic trend test cannot separate by construction.",
+      "proposed_minus_basic": 0.019848809014406,
+      "binary_proposed_minus_basic": 0.030303030303030276
+    }
+  },
+  "caveat": "Development/testing outputs on synthetic data: this compares methods on a generator, not on a landscape."
+}

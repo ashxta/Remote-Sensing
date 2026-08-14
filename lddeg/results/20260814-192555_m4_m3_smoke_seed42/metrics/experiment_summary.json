@@ -1,0 +1,17 @@
+{
+  "n_time_steps": 36,
+  "grid": [
+    200,
+    300
+  ],
+  "n_pixels": 60000,
+  "n_analysed": 3000,
+  "n_model_samples": 190,
+  "n_features": 45,
+  "n_folds": 4,
+  "block_size": 8,
+  "has_reference_labels": true,
+  "notes": [
+    "analysed pixels thinned to 3000 of 60000 usable (research.max_analysis_pixels); this is a reduced-scale run"
+  ]
+}

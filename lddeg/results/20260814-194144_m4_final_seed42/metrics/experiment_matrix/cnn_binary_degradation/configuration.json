@@ -1,0 +1,71 @@
+{
+  "model": {
+    "seed": 42,
+    "channels": [
+      32,
+      64
+    ],
+    "kernel_size": 5,
+    "dropout": 0.3,
+    "learning_rate": 0.001,
+    "weight_decay": 0.0001,
+    "batch_size": 32,
+    "max_epochs": 80,
+    "patience": 10,
+    "validation_folds": 1,
+    "spatial_cv": true,
+    "max_folds": 0,
+    "deterministic": true,
+    "enabled": true
+  },
+  "uncertainty": {
+    "confidence_threshold": 0.6,
+    "margin_threshold": 0.15
+  },
+  "classes": [
+    0,
+    1
+  ],
+  "folds": [
+    {
+      "fold": 0,
+      "checkpoint": "checkpoint_fold0.pt",
+      "validation_folds": [
+        4
+      ],
+      "best_epoch": 58
+    },
+    {
+      "fold": 1,
+      "checkpoint": "checkpoint_fold1.pt",
+      "validation_folds": [
+        2
+      ],
+      "best_epoch": 43
+    },
+    {
+      "fold": 2,
+      "checkpoint": "checkpoint_fold2.pt",
+      "validation_folds": [
+        1
+      ],
+      "best_epoch": 61
+    },
+    {
+      "fold": 3,
+      "checkpoint": "checkpoint_fold3.pt",
+      "validation_folds": [
+        2
+      ],
+      "best_epoch": 50
+    },
+    {
+      "fold": 4,
+      "checkpoint": "checkpoint_fold4.pt",
+      "validation_folds": [
+        0
+      ],
+      "best_epoch": 78
+    }
+  ]
+}

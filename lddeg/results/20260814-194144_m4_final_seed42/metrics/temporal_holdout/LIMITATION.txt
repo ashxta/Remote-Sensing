@@ -1,0 +1,1 @@
+Synthetic pixels carry one static label for the whole record and the windows are short, so this score characterises the synthetic generator, not temporal generalization. Real multi-decadal data (M6/M7) are required before quoting a temporal-generalization result.

@@ -1,0 +1,11 @@
+{
+  "n_surrogates": 39,
+  "alpha": 0.05,
+  "n_samples": 190,
+  "significant_fraction": 0.0,
+  "threshold_flag_fraction": 0.021052631578947368,
+  "agreement_with_threshold_rule": 0.9789473684210527,
+  "median_p_value": 0.7875000000000001,
+  "mean_enrichment": 1.186834454536438,
+  "interpretation": "A small p-value means the concentration of power inside the period band is unlikely for a series with this pixel's own amplitude spectrum and random phases. It does NOT identify a cause: rotational cultivation, plantation harvest cycles, fire-regrowth cycles and multi-year climate oscillation all produce phase-coherent periodicity. Periodicity is not jhum."
+}

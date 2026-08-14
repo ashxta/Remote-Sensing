@@ -1,0 +1,7 @@
+experiment,experiment_id,feature_set,feature_groups,n_features,n_evaluated,accuracy,precision_macro,recall_macro,f1_macro,f1_weighted,cohen_kappa,fold_f1_macro_mean,fold_f1_macro_std,fold_accuracy_mean,fold_accuracy_std
+A,A_basic_vegetation_6afad0775d,A_basic_vegetation,vegetation,9,190,0.968421052631579,0.9703658536585366,0.97,0.970122675418034,0.9685501846505622,0.9604166666666667,0.9683290154006268,0.0112176133786721,0.9677773436773269,0.011512938629386743
+B,B_basic_trend_30fdde67d4,B_basic_trend,vegetation+trend,14,190,0.9631578947368421,0.9654878048780487,0.9633333333333333,0.9643262188742415,0.9633407121066948,0.9538034039597082,0.9595320025243299,0.03540503821295654,0.960354225967889,0.03684135090878409
+C,C_add_restrend_c8d01d0559,C_add_restrend,vegetation+trend+restrend,19,190,1.0,1.0,1.0,1.0,1.0,1.0,1.0,0.0,1.0,0.0
+D,D_add_cyclicity_e7049c70b1,D_add_cyclicity,vegetation+trend+restrend+cyclicity,25,190,1.0,1.0,1.0,1.0,1.0,1.0,1.0,0.0,1.0,0.0
+E,E_add_disturbance_88d4ad30d9,E_add_disturbance,vegetation+trend+restrend+cyclicity+disturbance+recovery,40,190,1.0,1.0,1.0,1.0,1.0,1.0,1.0,0.0,1.0,0.0
+F,F_full_81b2c570c7,F_full,vegetation+trend+restrend+cyclicity+disturbance+recovery+rainfall,45,190,1.0,1.0,1.0,1.0,1.0,1.0,1.0,0.0,1.0,0.0

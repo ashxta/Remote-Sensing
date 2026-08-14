@@ -1,0 +1,203 @@
+{
+  "samples_per_class": 120,
+  "max_analysis_pixels": -1,
+  "features": {
+    "groups": [
+      "vegetation",
+      "trend",
+      "restrend",
+      "cyclicity",
+      "disturbance",
+      "recovery",
+      "rainfall"
+    ],
+    "require_finite": false
+  },
+  "trajectory": {
+    "alpha": 0.05,
+    "require_trend_significance": true,
+    "cyclicity_enrichment_threshold": 2.0,
+    "require_periodic_flag": true,
+    "recovery_fraction_threshold": 0.8,
+    "min_disturbance_magnitude": 0.05,
+    "priority": [
+      "Recovering",
+      "Degrading",
+      "Cyclic",
+      "Stable"
+    ]
+  },
+  "spatial_cv": {
+    "block_size": 8,
+    "n_folds": 5,
+    "seed": 42,
+    "buffer_blocks": 0
+  },
+  "model": {
+    "seed": 42,
+    "n_estimators": 500,
+    "min_samples_leaf": 2,
+    "max_features": "sqrt",
+    "class_weight": "none",
+    "imputation_strategy": "median",
+    "n_jobs": 1,
+    "block_cv": {
+      "block_size": 8,
+      "n_folds": 5,
+      "seed": 42,
+      "buffer_blocks": 0
+    }
+  },
+  "ablation": {
+    "experiments": [
+      {
+        "id": "A",
+        "name": "A_basic_vegetation",
+        "groups": [
+          "vegetation"
+        ]
+      },
+      {
+        "id": "B",
+        "name": "B_basic_trend",
+        "groups": [
+          "vegetation",
+          "trend"
+        ]
+      },
+      {
+        "id": "C",
+        "name": "C_add_restrend",
+        "groups": [
+          "vegetation",
+          "trend",
+          "restrend"
+        ]
+      },
+      {
+        "id": "D",
+        "name": "D_add_cyclicity",
+        "groups": [
+          "vegetation",
+          "trend",
+          "restrend",
+          "cyclicity"
+        ]
+      },
+      {
+        "id": "E",
+        "name": "E_add_disturbance",
+        "groups": [
+          "vegetation",
+          "trend",
+          "restrend",
+          "cyclicity",
+          "disturbance",
+          "recovery"
+        ]
+      },
+      {
+        "id": "F",
+        "name": "F_full",
+        "groups": [
+          "vegetation",
+          "trend",
+          "restrend",
+          "cyclicity",
+          "disturbance",
+          "recovery",
+          "rainfall"
+        ]
+      }
+    ]
+  },
+  "sensitivity": {
+    "parameters": [
+      {
+        "path": "trend.alpha",
+        "values": [
+          0.01,
+          0.05,
+          0.1
+        ],
+        "description": "Mann-Kendall significance level"
+      },
+      {
+        "path": "trend.min_obs",
+        "values": [
+          8,
+          10,
+          14
+        ],
+        "description": "minimum valid observations for a trend test"
+      },
+      {
+        "path": "restrend.min_r2",
+        "values": [
+          0.05,
+          0.1,
+          0.2
+        ],
+        "description": "minimum NDVI~rainfall partial r2 for a valid RESTREND"
+      },
+      {
+        "path": "cyclicity.min_period",
+        "values": [
+          3.0,
+          4.0,
+          5.0
+        ],
+        "description": "lower edge of the periodicity band (time steps)"
+      },
+      {
+        "path": "cyclicity.max_period",
+        "values": [
+          10.0,
+          12.0,
+          14.0
+        ],
+        "description": "upper edge of the periodicity band (time steps)"
+      },
+      {
+        "path": "cyclicity.periodicity_threshold",
+        "values": [
+          1.5,
+          2.0,
+          3.0
+        ],
+        "description": "spectral enrichment required to call a series cyclic"
+      },
+      {
+        "path": "breakpoint.min_variance_gain",
+        "values": [
+          0.03,
+          0.05,
+          0.1
+        ],
+        "description": "variance a two-segment fit must explain to be a break"
+      },
+      {
+        "path": "recovery.recovery_threshold",
+        "values": [
+          0.7,
+          0.8,
+          0.9
+        ],
+        "description": "share of pre-disturbance level counted as recovered"
+      }
+    ],
+    "evaluate_model": true,
+    "n_estimators": 150,
+    "enabled": true
+  },
+  "holdout": {
+    "cutoff_index": -1,
+    "cutoff_fraction": 0.65,
+    "min_history": 12,
+    "min_future": 12,
+    "spatially_separated": true,
+    "enabled": true
+  },
+  "random_split_baseline": true,
+  "baseline_test_size": 0.3
+}

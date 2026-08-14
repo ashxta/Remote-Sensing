@@ -1,0 +1,65 @@
+19:52:53 | INFO    | experiment 20260814-195251_m4_m2_full_seed42 started (seed=42)
+19:52:53 | INFO    | STAGE 1/8  data, quality control, features, trajectories, folds
+19:52:53 | INFO    | data source: raster_stack (synthetic development stacks)
+19:52:53 | INFO    | grid 200x300, 36 time steps, CRS=EPSG:4326
+19:52:53 | INFO    | usable 60000/60000 pixels; analysing 60000
+19:53:51 | INFO    | 45 modelling features over 60000 pixels
+19:53:51 | INFO    | trajectory classes: Stable 53635, Degrading 3936, Recovering 195, Cyclic 385, Uncertain / Other 1849
+19:53:51 | INFO    | 600 model samples (120 per class requested) over 5 spatial folds, block_size=8
+19:53:51 | INFO    | metrics written: dataset_metadata.json
+19:53:51 | INFO    | metrics written: data_quality.json
+19:53:51 | INFO    | metrics written: trajectory_summary.json
+19:53:51 | INFO    | metrics written: experiment_summary.json
+19:53:51 | INFO    | table written: feature_dictionary.csv
+19:53:51 | INFO    | table written: feature_summary.csv
+19:53:51 | INFO    | STAGE 2/8  georeferenced layers and temporal figures
+19:53:54 | INFO    | wrote 11 georeferenced layers and 6 maps
+19:54:02 | INFO    | wrote 5 per-class temporal diagnostic figures
+19:54:02 | INFO    | STAGE 3/8  spatial block cross-validation design
+19:54:03 | INFO    | block_size=8, folds=5, buffer_blocks=0
+19:54:03 | INFO    | STAGE 4/8  Random Forest with spatial block cross-validation
+19:54:12 | INFO    | metrics written: spatial_cv_metrics.json
+19:54:12 | INFO    | table written: rf_feature_importance.csv
+19:54:12 | INFO    | spatial CV: accuracy 0.9967 | macro F1 0.9967 | weighted F1 0.9967
+19:54:12 | INFO    | fold macro F1 0.9970 +/- 0.0037 over 5 folds
+19:54:13 | INFO    | metrics written: random_split_baseline_metrics.json
+19:54:13 | INFO    | random-split baseline (optimistic): accuracy 0.9944 | macro F1 0.9944
+19:54:13 | INFO    | table written: validation_comparison.csv
+19:54:13 | INFO    | STAGE 5/8  map-wide prediction, confidence and vector exports
+19:54:16 | INFO    | STAGE 6/8  ablation study A-F
+19:54:23 | INFO    |   ablation A_basic_vegetation    9 features | macro F1 0.9783 (fold mean 0.9786 +/- 0.0110)
+19:54:32 | INFO    |   ablation B_basic_trend        14 features | macro F1 0.9800 (fold mean 0.9804 +/- 0.0133)
+19:54:42 | INFO    |   ablation C_add_restrend       19 features | macro F1 0.9967 (fold mean 0.9970 +/- 0.0037)
+19:54:52 | INFO    |   ablation D_add_cyclicity      25 features | macro F1 1.0000 (fold mean 1.0000 +/- 0.0000)
+19:55:01 | INFO    |   ablation E_add_disturbance    40 features | macro F1 1.0000 (fold mean 1.0000 +/- 0.0000)
+19:55:08 | INFO    |   ablation F_full               45 features | macro F1 0.9967 (fold mean 0.9970 +/- 0.0037)
+19:55:08 | INFO    | table written: ablation_comparison.csv
+19:55:08 | INFO    | STAGE 7/8  sensitivity analysis
+19:55:11 | INFO    |   sensitivity trend.alpha                            = 0.01   | periodic 0.005 | degrading 0.210 | macro F1 0.9983
+19:55:12 | INFO    |   sensitivity trend.alpha                            = 0.05   | periodic 0.005 | degrading 0.232 | macro F1 0.9983
+19:55:14 | INFO    |   sensitivity trend.alpha                            = 0.1    | periodic 0.005 | degrading 0.248 | macro F1 0.9983
+19:55:15 | INFO    |   sensitivity trend.min_obs                          = 8      | periodic 0.005 | degrading 0.232 | macro F1 0.9983
+19:55:16 | INFO    |   sensitivity trend.min_obs                          = 10     | periodic 0.005 | degrading 0.232 | macro F1 0.9983
+19:55:18 | INFO    |   sensitivity trend.min_obs                          = 14     | periodic 0.005 | degrading 0.232 | macro F1 0.9983
+19:55:19 | INFO    |   sensitivity restrend.min_r2                        = 0.05   | periodic 0.005 | degrading 0.232 | macro F1 0.9983
+19:55:20 | INFO    |   sensitivity restrend.min_r2                        = 0.1    | periodic 0.005 | degrading 0.232 | macro F1 0.9983
+19:55:21 | INFO    |   sensitivity restrend.min_r2                        = 0.2    | periodic 0.005 | degrading 0.232 | macro F1 0.9983
+19:55:23 | INFO    |   sensitivity cyclicity.min_period                   = 3.0    | periodic 0.000 | degrading 0.232 | macro F1 0.9983
+19:55:24 | INFO    |   sensitivity cyclicity.min_period                   = 4.0    | periodic 0.005 | degrading 0.232 | macro F1 0.9983
+19:55:25 | INFO    |   sensitivity cyclicity.min_period                   = 5.0    | periodic 0.118 | degrading 0.232 | macro F1 0.9967
+19:55:27 | INFO    |   sensitivity cyclicity.max_period                   = 10.0   | periodic 0.025 | degrading 0.232 | macro F1 0.9983
+19:55:28 | INFO    |   sensitivity cyclicity.max_period                   = 12.0   | periodic 0.005 | degrading 0.232 | macro F1 0.9983
+19:55:29 | INFO    |   sensitivity cyclicity.max_period                   = 14.0   | periodic 0.005 | degrading 0.232 | macro F1 0.9983
+19:55:31 | INFO    |   sensitivity cyclicity.periodicity_threshold        = 1.5    | periodic 0.227 | degrading 0.232 | macro F1 0.9983
+19:55:32 | INFO    |   sensitivity cyclicity.periodicity_threshold        = 2.0    | periodic 0.005 | degrading 0.232 | macro F1 0.9983
+19:55:33 | INFO    |   sensitivity cyclicity.periodicity_threshold        = 3.0    | periodic 0.000 | degrading 0.232 | macro F1 0.9983
+19:55:35 | INFO    |   sensitivity breakpoint.min_variance_gain           = 0.03   | periodic 0.005 | degrading 0.232 | macro F1 0.9983
+19:55:36 | INFO    |   sensitivity breakpoint.min_variance_gain           = 0.05   | periodic 0.005 | degrading 0.232 | macro F1 0.9983
+19:55:37 | INFO    |   sensitivity breakpoint.min_variance_gain           = 0.1    | periodic 0.005 | degrading 0.232 | macro F1 0.9983
+19:55:39 | INFO    |   sensitivity recovery.recovery_threshold            = 0.7    | periodic 0.005 | degrading 0.232 | macro F1 0.9983
+19:55:40 | INFO    |   sensitivity recovery.recovery_threshold            = 0.8    | periodic 0.005 | degrading 0.232 | macro F1 0.9983
+19:55:41 | INFO    |   sensitivity recovery.recovery_threshold            = 0.9    | periodic 0.005 | degrading 0.232 | macro F1 0.9983
+19:55:42 | INFO    | STAGE 8/8  temporal holdout
+19:55:43 | INFO    | temporal holdout cutoff=23 (23 historical / 13 later steps): accuracy 0.7778, macro F1 0.7333 - NOT a temporal-generalization result on synthetic data
+19:55:43 | INFO    | metrics written: results.json
+19:55:43 | INFO    | EXPERIMENT COMPLETE -> D:\Projects\land_degradation_M1 (1)\lddeg\results\20260814-195251_m4_m2_full_seed42

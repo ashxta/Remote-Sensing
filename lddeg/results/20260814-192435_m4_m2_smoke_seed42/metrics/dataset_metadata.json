@@ -1,0 +1,51 @@
+{
+  "shape": [
+    36,
+    200,
+    300
+  ],
+  "n_time_steps": 36,
+  "n_pixels": 60000,
+  "ndvi_min": 0.12942823767662048,
+  "ndvi_max": 0.949999988079071,
+  "ndvi_out_of_physical_range": 0,
+  "rain_min": 1102.929931640625,
+  "rain_max": 2735.715087890625,
+  "rain_negative_values": 0,
+  "ndvi_nan": 0,
+  "rain_nan": 0,
+  "pixels_with_sufficient_observations": 60000,
+  "min_valid_obs_required": 10,
+  "mean_valid_observations": 36.0,
+  "crs_present": true,
+  "transform_present": true,
+  "georeference": {
+    "crs": "EPSG:4326",
+    "transform": [
+      0.005166666666666667,
+      0.0,
+      92.3,
+      0.0,
+      -0.00525,
+      26.6
+    ],
+    "pixel_width": 0.005166666666666667,
+    "pixel_height": 0.00525,
+    "origin_x": 92.3,
+    "origin_y": 26.6
+  },
+  "warnings": [],
+  "strict": false,
+  "source": {
+    "source": "raster_stack",
+    "description": "synthetic development stacks",
+    "ndvi_path": "D:\\Projects\\land_degradation_M1 (1)\\lddeg\\data\\rasters\\ndvi_stack.tif",
+    "rain_path": "D:\\Projects\\land_degradation_M1 (1)\\lddeg\\data\\rasters\\rain_stack.tif",
+    "truth_path": "D:\\Projects\\land_degradation_M1 (1)\\lddeg\\data\\rasters\\truth_classes.tif",
+    "ndvi_nodata": null,
+    "rain_nodata": null,
+    "synthetic": true
+  },
+  "n_time_labels": 36,
+  "has_reference_labels": true
+}

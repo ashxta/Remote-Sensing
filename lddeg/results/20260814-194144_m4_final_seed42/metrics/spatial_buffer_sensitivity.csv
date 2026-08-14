@@ -1,0 +1,3 @@
+buffer_blocks,accuracy,f1_macro,fold_f1_macro_std,n_evaluated
+0,0.9966666666666667,0.9966666377309792,0.003699380426682629,600
+1,1.0,1.0,0.0,600

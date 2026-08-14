@@ -1,0 +1,13 @@
+{
+  "null_model": "ar1",
+  "n_surrogates": 39,
+  "alpha": 0.05,
+  "n_samples": 190,
+  "significant_fraction": 0.05789473684210526,
+  "threshold_flag_fraction": 0.021052631578947368,
+  "agreement_with_threshold_rule": 0.9526315789473684,
+  "median_p_value": 0.35,
+  "mean_enrichment": 1.186834454536438,
+  "mean_ar1_coefficient": 0.19455593103111404,
+  "interpretation": "A small p-value means the concentration of power inside the period band is unlikely for a series with this pixel's own autocorrelation. It does NOT identify a cause: rotational cultivation, plantation harvest cycles, fire-regrowth cycles and multi-year climate oscillation all produce periodicity. Periodicity is not jhum."
+}

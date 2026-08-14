@@ -1,0 +1,16 @@
+{
+  "python": "3.11.9",
+  "platform": "Windows-10-10.0.26200-SP0",
+  "git_commit": "not-a-git-repo",
+  "packages": {
+    "numpy": "2.4.6",
+    "scipy": "1.17.1",
+    "pandas": "3.0.5",
+    "sklearn": "1.9.0",
+    "rasterio": "1.4.4",
+    "matplotlib": "3.11.1",
+    "torch": "2.13.0+cpu",
+    "pymannkendall": "1.4.3"
+  },
+  "timestamp_utc": "2026-08-14T13:56:00+00:00"
+}

@@ -1,0 +1,79 @@
+11:09:13 | INFO    | experiment 20260814-110911_m3_full_seed42 started (seed=42)
+11:09:13 | INFO    | STAGE 1/10  dataset, validity checks and quality gating
+11:09:13 | INFO    | metrics written: dataset_metadata.json
+11:09:14 | INFO    | metrics written: data_quality.json
+11:09:14 | INFO    | grid 200x300, 36 steps; analysing 60000 pixels
+11:09:14 | INFO    | STAGE 2/10  temporal analysis and feature engineering
+11:09:31 | INFO    | table written: feature_dictionary.csv
+11:09:31 | INFO    | table written: feature_summary.csv
+11:09:31 | INFO    | metrics written: trajectory_summary.json
+11:09:31 | INFO    | 45 modelling features; trajectory classes: Stable 53635, Degrading 3936, Recovering 195, Cyclic 385, Uncertain / Other 1849
+11:09:31 | INFO    | STAGE 3/10  sampling and spatial block design
+11:09:31 | INFO    | 600 model samples over 5 spatial folds (block_size=8)
+11:09:31 | INFO    | STAGE 4/10  leakage audit
+11:09:31 | INFO    | leakage audit: 21 checks, all passed
+11:09:31 | INFO    | STAGE 5/10  cyclicity surrogate-data significance
+11:09:32 | INFO    | metrics written: cyclicity_surrogate_test.json
+11:09:32 | INFO    | surrogate test: 7.2% of sampled pixels significant at alpha=0.05 (threshold rule flags 0.5%); agreement 93.3%
+11:09:32 | INFO    | STAGE 6/10  Random Forest, spatial block CV and uncertainty
+11:09:36 | INFO    | metrics written: spatial_cv_metrics.json
+11:09:36 | INFO    | RF spatial CV: accuracy 0.9967 | macro F1 0.9967 | fold macro F1 0.9970 +/- 0.0037
+11:09:36 | INFO    | uncertainty: 0.3% flagged; accuracy confident 1.0000 vs flagged 0.0
+11:09:37 | INFO    | metrics written: random_split_baseline_metrics.json
+11:09:44 | INFO    | table written: spatial_buffer_sensitivity.csv
+11:09:44 | INFO    | buffer sensitivity: buffer=0 macro F1 0.9967, buffer=1 macro F1 1.0000
+11:09:47 | INFO    | STAGE 7/10  explainability
+11:10:27 | INFO    |   permutation importance (held-out folds), top 5: rain_ndvi_correlation, restrend_r2, break_t, break_dslope, amp
+11:10:27 | INFO    |   SHAP: unavailable (optional dependency)
+11:10:28 | INFO    | STAGE 8/10  experiment matrix: baseline vs RF vs CNN vs proposed
+11:10:28 | INFO    |   matrix baseline_trend (MK+Sen rule): macro F1 0.9532, recall on degradation 1.0000
+11:10:35 | INFO    |   matrix rf_basic: binary macro F1 0.9974 | multiclass macro F1 0.9783
+11:10:42 | INFO    |   matrix rf_proposed: binary macro F1 0.9948 | multiclass macro F1 0.9967
+11:10:46 | INFO    |   cnn fold 0: 362 train / 148 validation / 90 test | best epoch 58 | macro F1 1.0000
+11:10:48 | INFO    |   cnn fold 1: 358 train / 89 validation / 153 test | best epoch 43 | macro F1 1.0000
+11:10:51 | INFO    |   cnn fold 2: 358 train / 153 validation / 89 test | best epoch 61 | macro F1 1.0000
+11:10:54 | INFO    |   cnn fold 3: 391 train / 89 validation / 120 test | best epoch 50 | macro F1 1.0000
+11:10:57 | INFO    |   cnn fold 4: 362 train / 90 validation / 148 test | best epoch 78 | macro F1 1.0000
+11:11:01 | INFO    |   cnn fold 0: 362 train / 148 validation / 90 test | best epoch 71 | macro F1 1.0000
+11:11:03 | INFO    |   cnn fold 1: 358 train / 89 validation / 153 test | best epoch 48 | macro F1 0.9946
+11:11:06 | INFO    |   cnn fold 2: 358 train / 153 validation / 89 test | best epoch 64 | macro F1 1.0000
+11:11:09 | INFO    |   cnn fold 3: 391 train / 89 validation / 120 test | best epoch 61 | macro F1 0.9900
+11:11:13 | INFO    |   cnn fold 4: 362 train / 90 validation / 148 test | best epoch 59 | macro F1 1.0000
+11:11:13 | INFO    |   matrix cnn_1d: binary macro F1 1.0000 | multiclass macro F1 0.9967
+11:11:13 | INFO    | table written: experiment_matrix.csv
+11:11:13 | INFO    | STAGE 9/10  ablation, sensitivity and temporal holdout
+11:11:17 | INFO    |   ablation A_basic_vegetation    9 features | macro F1 0.9783 (fold mean 0.9786 +/- 0.0110)
+11:11:21 | INFO    |   ablation B_basic_trend        14 features | macro F1 0.9800 (fold mean 0.9804 +/- 0.0133)
+11:11:25 | INFO    |   ablation C_add_restrend       19 features | macro F1 0.9967 (fold mean 0.9970 +/- 0.0037)
+11:11:29 | INFO    |   ablation D_add_cyclicity      25 features | macro F1 1.0000 (fold mean 1.0000 +/- 0.0000)
+11:11:33 | INFO    |   ablation E_add_disturbance    40 features | macro F1 1.0000 (fold mean 1.0000 +/- 0.0000)
+11:11:37 | INFO    |   ablation F_full               45 features | macro F1 0.9967 (fold mean 0.9970 +/- 0.0037)
+11:11:37 | INFO    | table written: ablation_comparison.csv
+11:11:40 | INFO    |   sensitivity trend.alpha                            = 0.01   | periodic 0.005 | degrading 0.210 | macro F1 0.9983
+11:11:41 | INFO    |   sensitivity trend.alpha                            = 0.05   | periodic 0.005 | degrading 0.232 | macro F1 0.9983
+11:11:43 | INFO    |   sensitivity trend.alpha                            = 0.1    | periodic 0.005 | degrading 0.248 | macro F1 0.9983
+11:11:44 | INFO    |   sensitivity trend.min_obs                          = 8      | periodic 0.005 | degrading 0.232 | macro F1 0.9983
+11:11:45 | INFO    |   sensitivity trend.min_obs                          = 10     | periodic 0.005 | degrading 0.232 | macro F1 0.9983
+11:11:47 | INFO    |   sensitivity trend.min_obs                          = 14     | periodic 0.005 | degrading 0.232 | macro F1 0.9983
+11:11:48 | INFO    |   sensitivity restrend.min_r2                        = 0.05   | periodic 0.005 | degrading 0.232 | macro F1 0.9983
+11:11:49 | INFO    |   sensitivity restrend.min_r2                        = 0.1    | periodic 0.005 | degrading 0.232 | macro F1 0.9983
+11:11:51 | INFO    |   sensitivity restrend.min_r2                        = 0.2    | periodic 0.005 | degrading 0.232 | macro F1 0.9983
+11:11:52 | INFO    |   sensitivity cyclicity.min_period                   = 3.0    | periodic 0.000 | degrading 0.232 | macro F1 0.9983
+11:11:54 | INFO    |   sensitivity cyclicity.min_period                   = 4.0    | periodic 0.005 | degrading 0.232 | macro F1 0.9983
+11:11:55 | INFO    |   sensitivity cyclicity.min_period                   = 5.0    | periodic 0.118 | degrading 0.232 | macro F1 0.9967
+11:11:56 | INFO    |   sensitivity cyclicity.max_period                   = 10.0   | periodic 0.025 | degrading 0.232 | macro F1 0.9983
+11:11:58 | INFO    |   sensitivity cyclicity.max_period                   = 12.0   | periodic 0.005 | degrading 0.232 | macro F1 0.9983
+11:11:59 | INFO    |   sensitivity cyclicity.max_period                   = 14.0   | periodic 0.005 | degrading 0.232 | macro F1 0.9983
+11:12:02 | INFO    |   sensitivity cyclicity.periodicity_threshold        = 1.5    | periodic 0.227 | degrading 0.232 | macro F1 0.9983
+11:12:06 | INFO    |   sensitivity cyclicity.periodicity_threshold        = 2.0    | periodic 0.005 | degrading 0.232 | macro F1 0.9983
+11:12:11 | INFO    |   sensitivity cyclicity.periodicity_threshold        = 3.0    | periodic 0.000 | degrading 0.232 | macro F1 0.9983
+11:12:16 | INFO    |   sensitivity breakpoint.min_variance_gain           = 0.03   | periodic 0.005 | degrading 0.232 | macro F1 0.9983
+11:12:19 | INFO    |   sensitivity breakpoint.min_variance_gain           = 0.05   | periodic 0.005 | degrading 0.232 | macro F1 0.9983
+11:12:20 | INFO    |   sensitivity breakpoint.min_variance_gain           = 0.1    | periodic 0.005 | degrading 0.232 | macro F1 0.9983
+11:12:22 | INFO    |   sensitivity recovery.recovery_threshold            = 0.7    | periodic 0.005 | degrading 0.232 | macro F1 0.9983
+11:12:26 | INFO    |   sensitivity recovery.recovery_threshold            = 0.8    | periodic 0.005 | degrading 0.232 | macro F1 0.9983
+11:12:31 | INFO    |   sensitivity recovery.recovery_threshold            = 0.9    | periodic 0.005 | degrading 0.232 | macro F1 0.9983
+11:12:37 | INFO    | temporal holdout cutoff=23 (23 historical / 13 later steps): accuracy 0.7778, macro F1 0.7333 - NOT a temporal-generalization result on synthetic data
+11:12:37 | INFO    | STAGE 10/10  saving experiment record
+11:12:37 | INFO    | metrics written: results.json
+11:12:37 | INFO    | EXPERIMENT COMPLETE -> D:\Projects\land_degradation_M1 (1)\lddeg\results\20260814-110911_m3_full_seed42

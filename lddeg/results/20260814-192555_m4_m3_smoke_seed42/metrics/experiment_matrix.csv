@@ -1,0 +1,8 @@
+method,task,representation,validation,n_features,accuracy,f1_macro,f1_weighted,precision_macro,recall_macro,cohen_kappa,fold_f1_macro_mean,fold_f1_macro_std,n_evaluated
+baseline_trend,binary_degradation,Mann-Kendall p + Sen slope sign,fixed rule (no training),2,0.9693877551020408,0.9567328918322295,0.9701040681173132,0.9375,0.9805194805194806,0.9135802469135803,0.9519906323185011,0.04800936768149888,98
+rf_basic,binary_degradation,basic vegetation features,spatial_block_cv,9,0.9795918367346939,0.9696969696969697,0.9795918367346939,0.9696969696969697,0.9696969696969697,0.9393939393939394,0.96863897503686,0.005743047435050053,98
+rf_proposed,binary_degradation,proposed framework: trend + RESTREND + cyclicity + breakpoint/recovery,spatial_block_cv,45,1.0,1.0,1.0,1.0,1.0,1.0,1.0,0.0,98
+cnn_1d,binary_degradation,learned from the raw NDVI sequence,spatial_block_cv,36,0.8571428571428571,0.7385670731707317,0.8391768292682927,0.8401253918495297,0.7012987012987013,0.4869109947643979,0.7424611327836258,0.05355876771388657,98
+rf_basic,multiclass_trajectory,basic vegetation features,spatial_block_cv,9,0.9795918367346939,0.980151190985594,0.9798910749580106,0.9800000000000001,0.9817805383022774,0.974385781495034,0.9791255632687859,0.00041407867494819284,98
+rf_proposed,multiclass_trajectory,proposed framework: trend + RESTREND + cyclicity + breakpoint/recovery,spatial_block_cv,45,1.0,1.0,1.0,1.0,1.0,1.0,1.0,0.0,98
+cnn_1d,multiclass_trajectory,learned from the raw NDVI sequence,spatial_block_cv,36,0.7040816326530612,0.6572607103041885,0.6673357254989908,0.7097592332865824,0.7048309178743961,0.6302367941712204,0.6382019647019647,0.10469547119547118,98

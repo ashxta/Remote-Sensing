@@ -1,0 +1,215 @@
+{
+  "n_checks": 21,
+  "n_failed": 0,
+  "passed": true,
+  "context": {
+    "block_size": 8,
+    "n_folds": 5,
+    "buffer_blocks": 0,
+    "seed": 42
+  },
+  "checks": [
+    {
+      "check": "block_purity",
+      "passed": true,
+      "statement": "0 spatial blocks are split across more than one fold",
+      "evidence": {
+        "n_blocks": 950,
+        "split_blocks": []
+      }
+    },
+    {
+      "check": "label_leakage",
+      "passed": true,
+      "statement": "no model input is named after or numerically identical to the target",
+      "evidence": {
+        "forbidden_names": [],
+        "suspicious_features": [],
+        "n_features": 45
+      }
+    },
+    {
+      "check": "spatial_sample_overlap",
+      "passed": true,
+      "statement": "0 samples appear in both the training and the test set",
+      "evidence": {
+        "n_train": 510,
+        "n_test": 90,
+        "overlap": 0
+      }
+    },
+    {
+      "check": "preprocessing_isolation",
+      "passed": true,
+      "statement": "the imputer was fitted on 0 test samples",
+      "evidence": {
+        "component": "imputer",
+        "n_fitted_on": 510,
+        "contaminated": 0
+      }
+    },
+    {
+      "check": "buffer_separation",
+      "passed": true,
+      "statement": "plain block CV: train and test share no block (minimum block distance 1); adjacent blocks still touch, which is a known limitation of block CV without a buffer",
+      "evidence": {
+        "buffer_blocks": 0,
+        "minimum_block_distance": 1
+      }
+    },
+    {
+      "check": "spatial_sample_overlap",
+      "passed": true,
+      "statement": "0 samples appear in both the training and the test set",
+      "evidence": {
+        "n_train": 447,
+        "n_test": 153,
+        "overlap": 0
+      }
+    },
+    {
+      "check": "preprocessing_isolation",
+      "passed": true,
+      "statement": "the imputer was fitted on 0 test samples",
+      "evidence": {
+        "component": "imputer",
+        "n_fitted_on": 447,
+        "contaminated": 0
+      }
+    },
+    {
+      "check": "buffer_separation",
+      "passed": true,
+      "statement": "plain block CV: train and test share no block (minimum block distance 1); adjacent blocks still touch, which is a known limitation of block CV without a buffer",
+      "evidence": {
+        "buffer_blocks": 0,
+        "minimum_block_distance": 1
+      }
+    },
+    {
+      "check": "spatial_sample_overlap",
+      "passed": true,
+      "statement": "0 samples appear in both the training and the test set",
+      "evidence": {
+        "n_train": 511,
+        "n_test": 89,
+        "overlap": 0
+      }
+    },
+    {
+      "check": "preprocessing_isolation",
+      "passed": true,
+      "statement": "the imputer was fitted on 0 test samples",
+      "evidence": {
+        "component": "imputer",
+        "n_fitted_on": 511,
+        "contaminated": 0
+      }
+    },
+    {
+      "check": "buffer_separation",
+      "passed": true,
+      "statement": "plain block CV: train and test share no block (minimum block distance 1); adjacent blocks still touch, which is a known limitation of block CV without a buffer",
+      "evidence": {
+        "buffer_blocks": 0,
+        "minimum_block_distance": 1
+      }
+    },
+    {
+      "check": "spatial_sample_overlap",
+      "passed": true,
+      "statement": "0 samples appear in both the training and the test set",
+      "evidence": {
+        "n_train": 480,
+        "n_test": 120,
+        "overlap": 0
+      }
+    },
+    {
+      "check": "preprocessing_isolation",
+      "passed": true,
+      "statement": "the imputer was fitted on 0 test samples",
+      "evidence": {
+        "component": "imputer",
+        "n_fitted_on": 480,
+        "contaminated": 0
+      }
+    },
+    {
+      "check": "buffer_separation",
+      "passed": true,
+      "statement": "plain block CV: train and test share no block (minimum block distance 1); adjacent blocks still touch, which is a known limitation of block CV without a buffer",
+      "evidence": {
+        "buffer_blocks": 0,
+        "minimum_block_distance": 1
+      }
+    },
+    {
+      "check": "spatial_sample_overlap",
+      "passed": true,
+      "statement": "0 samples appear in both the training and the test set",
+      "evidence": {
+        "n_train": 452,
+        "n_test": 148,
+        "overlap": 0
+      }
+    },
+    {
+      "check": "preprocessing_isolation",
+      "passed": true,
+      "statement": "the imputer was fitted on 0 test samples",
+      "evidence": {
+        "component": "imputer",
+        "n_fitted_on": 452,
+        "contaminated": 0
+      }
+    },
+    {
+      "check": "buffer_separation",
+      "passed": true,
+      "statement": "plain block CV: train and test share no block (minimum block distance 1); adjacent blocks still touch, which is a known limitation of block CV without a buffer",
+      "evidence": {
+        "buffer_blocks": 0,
+        "minimum_block_distance": 1
+      }
+    },
+    {
+      "check": "temporal_separation",
+      "passed": true,
+      "statement": "historical indices end at 22 and later indices start at 23 around cutoff 23",
+      "evidence": {
+        "cutoff": 23,
+        "n_historical": 23,
+        "n_later": 13,
+        "n_time": 36
+      }
+    },
+    {
+      "check": "no_lookahead",
+      "passed": true,
+      "statement": "historical features are unchanged when every observation from the cutoff onwards is corrupted",
+      "evidence": {
+        "cutoff": 23,
+        "n_features": 47
+      }
+    },
+    {
+      "check": "ablation_isolation",
+      "passed": true,
+      "statement": "every ablation cell contains only documented, unique features",
+      "evidence": {
+        "violations": {},
+        "n_cells": 6
+      }
+    },
+    {
+      "check": "ablation_feature_groups",
+      "passed": true,
+      "statement": "each ablation cell resolves to exactly its declared feature groups",
+      "evidence": {
+        "violations": {}
+      }
+    }
+  ],
+  "note": "Executable leakage assertions, re-evaluated on every run. A passing audit constrains the experiment design; it does not by itself make a result generalise."
+}

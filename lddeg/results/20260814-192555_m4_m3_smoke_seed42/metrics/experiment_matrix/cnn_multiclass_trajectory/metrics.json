@@ -1,0 +1,318 @@
+{
+  "n_samples": 98,
+  "accuracy": 0.7040816326530612,
+  "cohen_kappa": 0.6302367941712204,
+  "precision_macro": 0.7097592332865824,
+  "recall_macro": 0.7048309178743961,
+  "f1_macro": 0.6572607103041885,
+  "precision_weighted": 0.7259436032477506,
+  "recall_weighted": 0.7040816326530612,
+  "f1_weighted": 0.6673357254989908,
+  "per_class": {
+    "1": {
+      "precision": 0.6774193548387096,
+      "recall": 1.0,
+      "f1": 0.8076923076923077,
+      "support": 21
+    },
+    "2": {
+      "precision": 0.625,
+      "recall": 0.2777777777777778,
+      "f1": 0.38461538461538464,
+      "support": 18
+    },
+    "3": {
+      "precision": 0.9130434782608695,
+      "recall": 0.9130434782608695,
+      "f1": 0.9130434782608695,
+      "support": 23
+    },
+    "4": {
+      "precision": 0.7777777777777778,
+      "recall": 0.3333333333333333,
+      "f1": 0.4666666666666667,
+      "support": 21
+    },
+    "5": {
+      "precision": 0.5555555555555556,
+      "recall": 1.0,
+      "f1": 0.7142857142857143,
+      "support": 15
+    }
+  },
+  "confusion_matrix": [
+    [
+      21,
+      0,
+      0,
+      0,
+      0
+    ],
+    [
+      0,
+      5,
+      2,
+      2,
+      9
+    ],
+    [
+      0,
+      0,
+      21,
+      0,
+      2
+    ],
+    [
+      10,
+      3,
+      0,
+      7,
+      1
+    ],
+    [
+      0,
+      0,
+      0,
+      0,
+      15
+    ]
+  ],
+  "labels": [
+    1,
+    2,
+    3,
+    4,
+    5
+  ],
+  "validation": "spatial_block_cv",
+  "model": "cnn_1d",
+  "fold_metrics": [
+    {
+      "n_samples": 41,
+      "accuracy": 0.5853658536585366,
+      "cohen_kappa": 0.49382716049382713,
+      "precision_macro": 0.6743589743589744,
+      "recall_macro": 0.6503030303030304,
+      "f1_macro": 0.5335064935064935,
+      "precision_weighted": 0.7415259537210757,
+      "recall_weighted": 0.5853658536585366,
+      "f1_weighted": 0.5366803927779538,
+      "per_class": {
+        "1": {
+          "precision": 0.5384615384615384,
+          "recall": 1.0,
+          "f1": 0.7,
+          "support": 7
+        },
+        "2": {
+          "precision": 1.0,
+          "recall": 0.1,
+          "f1": 0.18181818181818182,
+          "support": 10
+        },
+        "3": {
+          "precision": 0.9,
+          "recall": 0.8181818181818182,
+          "f1": 0.8571428571428571,
+          "support": 11
+        },
+        "4": {
+          "precision": 0.6,
+          "recall": 0.3333333333333333,
+          "f1": 0.42857142857142855,
+          "support": 9
+        },
+        "5": {
+          "precision": 0.3333333333333333,
+          "recall": 1.0,
+          "f1": 0.5,
+          "support": 4
+        }
+      },
+      "confusion_matrix": [
+        [
+          7,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          1,
+          1,
+          2,
+          6
+        ],
+        [
+          0,
+          0,
+          9,
+          0,
+          2
+        ],
+        [
+          6,
+          0,
+          0,
+          3,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          4
+        ]
+      ],
+      "labels": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "fold": 0,
+      "n_train": 103,
+      "n_validation": 46,
+      "n_test": 41,
+      "validation_folds": [
+        3
+      ],
+      "best_epoch": 6,
+      "epochs_run": 6
+    },
+    {
+      "n_samples": 57,
+      "accuracy": 0.7894736842105263,
+      "cohen_kappa": 0.7340590979782271,
+      "precision_macro": 0.8011233211233211,
+      "recall_macro": 0.7666666666666667,
+      "f1_macro": 0.7428974358974358,
+      "precision_weighted": 0.8176124070860912,
+      "recall_weighted": 0.7894736842105263,
+      "f1_weighted": 0.7604273504273503,
+      "per_class": {
+        "1": {
+          "precision": 0.7777777777777778,
+          "recall": 1.0,
+          "f1": 0.875,
+          "support": 14
+        },
+        "2": {
+          "precision": 0.5714285714285714,
+          "recall": 0.5,
+          "f1": 0.5333333333333333,
+          "support": 8
+        },
+        "3": {
+          "precision": 0.9230769230769231,
+          "recall": 1.0,
+          "f1": 0.96,
+          "support": 12
+        },
+        "4": {
+          "precision": 1.0,
+          "recall": 0.3333333333333333,
+          "f1": 0.5,
+          "support": 12
+        },
+        "5": {
+          "precision": 0.7333333333333333,
+          "recall": 1.0,
+          "f1": 0.8461538461538461,
+          "support": 11
+        }
+      },
+      "confusion_matrix": [
+        [
+          14,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          4,
+          1,
+          0,
+          3
+        ],
+        [
+          0,
+          0,
+          12,
+          0,
+          0
+        ],
+        [
+          4,
+          3,
+          0,
+          4,
+          1
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          11
+        ]
+      ],
+      "labels": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "fold": 1,
+      "n_train": 87,
+      "n_validation": 46,
+      "n_test": 57,
+      "validation_folds": [
+        2
+      ],
+      "best_epoch": 6,
+      "epochs_run": 6
+    }
+  ],
+  "fold_summary": {
+    "accuracy_mean": 0.6874197689345314,
+    "accuracy_std": 0.10205391527599489,
+    "precision_macro_mean": 0.7377411477411477,
+    "precision_macro_std": 0.06338217338217333,
+    "recall_macro_mean": 0.7084848484848485,
+    "recall_macro_std": 0.05818181818181817,
+    "f1_macro_mean": 0.6382019647019647,
+    "f1_macro_std": 0.10469547119547118,
+    "precision_weighted_mean": 0.7795691804035834,
+    "precision_weighted_std": 0.03804322668250776,
+    "recall_weighted_mean": 0.6874197689345314,
+    "recall_weighted_std": 0.10205391527599489,
+    "f1_weighted_mean": 0.648553871602652,
+    "f1_weighted_std": 0.11187347882469828,
+    "cohen_kappa_mean": 0.6139431292360271,
+    "cohen_kappa_std": 0.12011596874219999,
+    "n_folds": 2
+  },
+  "n_evaluated": 98,
+  "uncertainty": {
+    "n_samples": 98,
+    "n_uncertain": 80,
+    "uncertain_fraction": 0.8163265306122449,
+    "confidence_threshold": 0.6,
+    "margin_threshold": 0.15,
+    "mean_confidence": 0.4185913588319506,
+    "median_confidence": 0.3488268256187439,
+    "mean_margin": 0.20353120937943459,
+    "mean_normalised_entropy": 0.8519657329081246,
+    "disclaimer": "Model confidence estimates conditional on the training data, feature set and model family. They are relative scores, not calibrated probabilities and not certainty about the land surface.",
+    "accuracy_confident_subset": 1.0,
+    "accuracy_uncertain_subset": 0.6375,
+    "confidence_is_informative": true
+  }
+}

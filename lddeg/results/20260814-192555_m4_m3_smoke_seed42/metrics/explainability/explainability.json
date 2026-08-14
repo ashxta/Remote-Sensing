@@ -1,0 +1,135 @@
+{
+  "disclaimer": "Feature importance is predictive association inside a fitted model, not causal influence on the land surface. Correlated features share credit arbitrarily.",
+  "permutation": {
+    "method": "macro F1 drop when a feature is scrambled, measured on held-out spatial folds",
+    "repeats": 2,
+    "top": [
+      {
+        "feature": "amp",
+        "importance_mean": 0.0,
+        "importance_std": 0.0,
+        "n_folds": 4
+      },
+      {
+        "feature": "break_dslope",
+        "importance_mean": 0.0,
+        "importance_std": 0.0,
+        "n_folds": 4
+      },
+      {
+        "feature": "break_gain",
+        "importance_mean": 0.0,
+        "importance_std": 0.0,
+        "n_folds": 4
+      },
+      {
+        "feature": "break_t",
+        "importance_mean": 0.0,
+        "importance_std": 0.0,
+        "n_folds": 4
+      },
+      {
+        "feature": "breakpoint_index",
+        "importance_mean": 0.0,
+        "importance_std": 0.0,
+        "n_folds": 4
+      },
+      {
+        "feature": "breakpoint_significant",
+        "importance_mean": 0.0,
+        "importance_std": 0.0,
+        "n_folds": 4
+      },
+      {
+        "feature": "cv",
+        "importance_mean": 0.0,
+        "importance_std": 0.0,
+        "n_folds": 4
+      },
+      {
+        "feature": "cyc_band_power",
+        "importance_mean": 0.0,
+        "importance_std": 0.0,
+        "n_folds": 4
+      },
+      {
+        "feature": "cyc_enrichment",
+        "importance_mean": 0.0,
+        "importance_std": 0.0,
+        "n_folds": 4
+      },
+      {
+        "feature": "cyc_period",
+        "importance_mean": 0.0,
+        "importance_std": 0.0,
+        "n_folds": 4
+      },
+      {
+        "feature": "cyc_score",
+        "importance_mean": 0.0,
+        "importance_std": 0.0,
+        "n_folds": 4
+      },
+      {
+        "feature": "cyc_total_power",
+        "importance_mean": 0.0,
+        "importance_std": 0.0,
+        "n_folds": 4
+      },
+      {
+        "feature": "cyclicity_periodic",
+        "importance_mean": 0.0,
+        "importance_std": 0.0,
+        "n_folds": 4
+      },
+      {
+        "feature": "disturbance_magnitude",
+        "importance_mean": 0.0,
+        "importance_std": 0.0,
+        "n_folds": 4
+      },
+      {
+        "feature": "has_break",
+        "importance_mean": 0.0,
+        "importance_std": 0.0,
+        "n_folds": 4
+      },
+      {
+        "feature": "has_disturbance",
+        "importance_mean": 0.0,
+        "importance_std": 0.0,
+        "n_folds": 4
+      },
+      {
+        "feature": "maximum_ndvi",
+        "importance_mean": 0.0,
+        "importance_std": 0.0,
+        "n_folds": 4
+      },
+      {
+        "feature": "mean",
+        "importance_mean": 0.0,
+        "importance_std": 0.0,
+        "n_folds": 4
+      },
+      {
+        "feature": "median_ndvi",
+        "importance_mean": 0.0,
+        "importance_std": 0.0,
+        "n_folds": 4
+      },
+      {
+        "feature": "minimum_ndvi",
+        "importance_mean": 0.0,
+        "importance_std": 0.0,
+        "n_folds": 4
+      }
+    ]
+  },
+  "shap": {
+    "available": false,
+    "reason": "the optional 'shap' package is not installed or its tree explainer could not handle this model",
+    "n_samples": null,
+    "top": null
+  }
+}

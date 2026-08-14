@@ -1,0 +1,373 @@
+{
+  "experiment_name": "m1_cnn_check",
+  "seed": 42,
+  "deterministic": true,
+  "years": [
+    1990,
+    1991,
+    1992,
+    1993,
+    1994,
+    1995,
+    1996,
+    1997,
+    1998,
+    1999,
+    2000,
+    2001,
+    2002,
+    2003,
+    2004,
+    2005,
+    2006,
+    2007,
+    2008,
+    2009,
+    2010,
+    2011,
+    2012,
+    2013,
+    2014,
+    2015,
+    2016,
+    2017,
+    2018,
+    2019,
+    2020,
+    2021,
+    2022,
+    2023,
+    2024,
+    2025
+  ],
+  "paths": {
+    "root": "D:\\Projects\\land_degradation_M1 (1)\\lddeg",
+    "data": "D:\\Projects\\land_degradation_M1 (1)\\lddeg\\data",
+    "rasters": "D:\\Projects\\land_degradation_M1 (1)\\lddeg\\data\\rasters",
+    "tables": "D:\\Projects\\land_degradation_M1 (1)\\lddeg\\data\\tables",
+    "results": "D:\\Projects\\land_degradation_M1 (1)\\lddeg\\results",
+    "legacy_outputs": "D:\\Projects\\land_degradation_M1 (1)\\lddeg\\outputs",
+    "ndvi_stack": "D:\\Projects\\land_degradation_M1 (1)\\lddeg\\data\\rasters\\ndvi_stack.tif",
+    "rain_stack": "D:\\Projects\\land_degradation_M1 (1)\\lddeg\\data\\rasters\\rain_stack.tif",
+    "truth": "D:\\Projects\\land_degradation_M1 (1)\\lddeg\\data\\rasters\\truth_classes.tif",
+    "samples_csv": "D:\\Projects\\land_degradation_M1 (1)\\lddeg\\data\\tables\\training_samples.csv"
+  },
+  "quality": {
+    "min_valid_obs": 10,
+    "max_missing_fraction": 0.4,
+    "min_variance": 1e-08,
+    "ndvi_min": -1.0,
+    "ndvi_max": 1.0,
+    "allow_interpolation": false,
+    "max_interpolation_gap": 2
+  },
+  "trend": {
+    "alpha": 0.05,
+    "apply_ties_correction": true,
+    "apply_autocorrelation_correction": true,
+    "hr_significance_level": 0.05,
+    "hr_max_lag_fraction": 0.5,
+    "min_obs": 10
+  },
+  "restrend": {
+    "alpha": 0.05,
+    "min_r2": 0.1,
+    "require_positive_beta": true,
+    "min_obs": 10
+  },
+  "cyclicity": {
+    "min_period": 4.0,
+    "max_period": 12.0,
+    "detrend": true,
+    "periodicity_threshold": 2.0,
+    "min_obs": 12,
+    "surrogate_test": false,
+    "n_surrogates": 199,
+    "surrogate_alpha": 0.05,
+    "surrogate_seed": 42
+  },
+  "breakpoint": {
+    "min_segment_length": 4,
+    "min_variance_gain": 0.05,
+    "significance_alpha": 0.05,
+    "apply_significance_test": true
+  },
+  "recovery": {
+    "recovery_threshold": 0.8,
+    "min_disturbance_magnitude": 0.05,
+    "min_post_obs": 3,
+    "pre_window": 3
+  },
+  "model": {
+    "rf_trees": 500,
+    "rf_min_samples_leaf": 2,
+    "test_size": 0.3,
+    "samples_per_class": 600,
+    "cnn_epochs": 60,
+    "cnn_lr": 0.001,
+    "cnn_batch": 64,
+    "use_cnn": true
+  },
+  "research": {
+    "samples_per_class": 120,
+    "max_analysis_pixels": -1,
+    "features": {
+      "groups": [
+        "vegetation",
+        "trend",
+        "restrend",
+        "cyclicity",
+        "disturbance",
+        "recovery",
+        "rainfall"
+      ],
+      "require_finite": false
+    },
+    "trajectory": {
+      "alpha": 0.05,
+      "require_trend_significance": true,
+      "cyclicity_enrichment_threshold": 2.0,
+      "require_periodic_flag": true,
+      "recovery_fraction_threshold": 0.8,
+      "min_disturbance_magnitude": 0.05,
+      "require_significant_breakpoint": true,
+      "priority": [
+        "Recovering",
+        "Degrading",
+        "Cyclic",
+        "Stable"
+      ]
+    },
+    "spatial_cv": {
+      "block_size": 8,
+      "n_folds": 5,
+      "seed": 42,
+      "buffer_blocks": 0
+    },
+    "model": {
+      "seed": 42,
+      "n_estimators": 500,
+      "min_samples_leaf": 2,
+      "max_features": "sqrt",
+      "class_weight": "none",
+      "imputation_strategy": "median",
+      "n_jobs": 1,
+      "block_cv": {
+        "block_size": 8,
+        "n_folds": 5,
+        "seed": 42,
+        "buffer_blocks": 0
+      }
+    },
+    "ablation": {
+      "experiments": [
+        {
+          "id": "A",
+          "name": "A_basic_vegetation",
+          "groups": [
+            "vegetation"
+          ]
+        },
+        {
+          "id": "B",
+          "name": "B_basic_trend",
+          "groups": [
+            "vegetation",
+            "trend"
+          ]
+        },
+        {
+          "id": "C",
+          "name": "C_add_restrend",
+          "groups": [
+            "vegetation",
+            "trend",
+            "restrend"
+          ]
+        },
+        {
+          "id": "D",
+          "name": "D_add_cyclicity",
+          "groups": [
+            "vegetation",
+            "trend",
+            "restrend",
+            "cyclicity"
+          ]
+        },
+        {
+          "id": "E",
+          "name": "E_add_disturbance",
+          "groups": [
+            "vegetation",
+            "trend",
+            "restrend",
+            "cyclicity",
+            "disturbance",
+            "recovery"
+          ]
+        },
+        {
+          "id": "F",
+          "name": "F_full",
+          "groups": [
+            "vegetation",
+            "trend",
+            "restrend",
+            "cyclicity",
+            "disturbance",
+            "recovery",
+            "rainfall"
+          ]
+        }
+      ]
+    },
+    "sensitivity": {
+      "parameters": [
+        {
+          "path": "trend.alpha",
+          "values": [
+            0.01,
+            0.05,
+            0.1
+          ],
+          "description": "Mann-Kendall significance level"
+        },
+        {
+          "path": "trend.min_obs",
+          "values": [
+            8,
+            10,
+            14
+          ],
+          "description": "minimum valid observations for a trend test"
+        },
+        {
+          "path": "restrend.min_r2",
+          "values": [
+            0.05,
+            0.1,
+            0.2
+          ],
+          "description": "minimum NDVI~rainfall partial r2 for a valid RESTREND"
+        },
+        {
+          "path": "cyclicity.min_period",
+          "values": [
+            3.0,
+            4.0,
+            5.0
+          ],
+          "description": "lower edge of the periodicity band (time steps)"
+        },
+        {
+          "path": "cyclicity.max_period",
+          "values": [
+            10.0,
+            12.0,
+            14.0
+          ],
+          "description": "upper edge of the periodicity band (time steps)"
+        },
+        {
+          "path": "cyclicity.periodicity_threshold",
+          "values": [
+            1.5,
+            2.0,
+            3.0
+          ],
+          "description": "spectral enrichment required to call a series cyclic"
+        },
+        {
+          "path": "breakpoint.min_variance_gain",
+          "values": [
+            0.03,
+            0.05,
+            0.1
+          ],
+          "description": "variance a two-segment fit must explain to be a break"
+        },
+        {
+          "path": "recovery.recovery_threshold",
+          "values": [
+            0.7,
+            0.8,
+            0.9
+          ],
+          "description": "share of pre-disturbance level counted as recovered"
+        }
+      ],
+      "evaluate_model": true,
+      "n_estimators": 150,
+      "enabled": true
+    },
+    "holdout": {
+      "cutoff_index": -1,
+      "cutoff_fraction": 0.65,
+      "min_history": 12,
+      "min_future": 12,
+      "spatially_separated": true,
+      "enabled": true
+    },
+    "uncertainty": {
+      "confidence_threshold": 0.6,
+      "margin_threshold": 0.15
+    },
+    "cnn": {
+      "seed": 42,
+      "channels": [
+        32,
+        64
+      ],
+      "kernel_size": 5,
+      "dropout": 0.3,
+      "learning_rate": 0.001,
+      "weight_decay": 0.0001,
+      "batch_size": 32,
+      "max_epochs": 80,
+      "patience": 10,
+      "validation_folds": 1,
+      "spatial_cv": true,
+      "max_folds": 0,
+      "deterministic": true,
+      "enabled": true
+    },
+    "explain": {
+      "permutation_repeats": 5,
+      "permutation_seed": 42,
+      "top_n": 20,
+      "shap": true,
+      "shap_max_samples": 200,
+      "shap_seed": 42
+    },
+    "matrix": {
+      "run_baseline": true,
+      "run_random_forest": true,
+      "run_cnn": true,
+      "run_proposed": true,
+      "degradation_classes": [
+        4
+      ],
+      "buffer_sensitivity": [
+        0,
+        1
+      ]
+    },
+    "random_split_baseline": true,
+    "baseline_test_size": 0.3
+  },
+  "classes": {
+    "1": "Stable high-NDVI",
+    "2": "Cropland / grassland",
+    "3": "Cyclic / periodic",
+    "4": "Declining",
+    "5": "Recovering"
+  },
+  "class_colors": {
+    "1": "#1a7a3a",
+    "2": "#c8b458",
+    "3": "#e07b39",
+    "4": "#c0242b",
+    "5": "#3a86c8"
+  }
+}

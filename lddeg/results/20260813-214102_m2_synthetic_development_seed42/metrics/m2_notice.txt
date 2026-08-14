@@ -1,0 +1,1 @@
+Synthetic data are used for development and pipeline validation. They are not real observations and must not be interpreted as real-world research findings.

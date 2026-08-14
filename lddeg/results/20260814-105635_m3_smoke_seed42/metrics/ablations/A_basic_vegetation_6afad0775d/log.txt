@@ -1,0 +1,8 @@
+experiment A (A_basic_vegetation)
+feature groups: vegetation
+features (9): mean, median_ndvi, minimum_ndvi, maximum_ndvi, std, cv, amp, sen, ols_slope
+validation: spatial block CV, 4 folds evaluated, block_size=8, buffer_blocks=0
+samples evaluated: 190
+accuracy 0.9684 | macro F1 0.9701 | weighted F1 0.9686
+fold macro F1 mean+/-std: 0.9683 +/- 0.0112
+Probabilities are model confidence estimates, not certainty.

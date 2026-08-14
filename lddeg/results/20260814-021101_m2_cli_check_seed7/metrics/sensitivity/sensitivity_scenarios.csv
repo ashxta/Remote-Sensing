@@ -1,0 +1,7 @@
+parameter,value,baseline_value,is_baseline,description
+trend.alpha,0.01,0.05,False,Mann-Kendall significance level
+trend.alpha,0.05,0.05,True,Mann-Kendall significance level
+trend.alpha,0.1,0.05,False,Mann-Kendall significance level
+trend.min_obs,8.0,10.0,False,minimum valid observations for a trend test
+trend.min_obs,10.0,10.0,True,minimum valid observations for a trend test
+trend.min_obs,14.0,10.0,False,minimum valid observations for a trend test

@@ -1,0 +1,663 @@
+{
+  "data_status": "Synthetic data are used for development and pipeline validation. They are not real observations and must not be interpreted as real-world research findings. No output in this directory measures any real location.",
+  "confidence_disclaimer": "Model confidence estimates conditional on the training data, feature set and model family. They are relative scores, not calibrated probabilities and not certainty about the land surface.",
+  "data_quality": {
+    "n_pixels": 60000,
+    "n_obs_per_pixel": 36,
+    "n_usable": 60000,
+    "usable_fraction": 1.0,
+    "mean_valid_observations": 36.0,
+    "mean_missing_fraction": 0.0,
+    "flag_counts": {
+      "OK": 60000,
+      "INSUFFICIENT_OBS": 0,
+      "TOO_MANY_MISSING": 0,
+      "CONSTANT": 0,
+      "OUT_OF_RANGE": 0
+    }
+  },
+  "trajectory": {
+    "n_pixels": 3000,
+    "counts": {
+      "Stable": 2700,
+      "Degrading": 176,
+      "Recovering": 12,
+      "Cyclic": 20,
+      "Uncertain / Other": 92
+    },
+    "fractions": {
+      "Stable": 0.9,
+      "Degrading": 0.058666666666666666,
+      "Recovering": 0.004,
+      "Cyclic": 0.006666666666666667,
+      "Uncertain / Other": 0.030666666666666665
+    }
+  },
+  "leakage_audit": {
+    "n_checks": 18,
+    "passed": true
+  },
+  "cyclicity_surrogate_test": {
+    "n_surrogates": 39,
+    "alpha": 0.05,
+    "n_samples": 190,
+    "significant_fraction": 0.0,
+    "threshold_flag_fraction": 0.021052631578947368,
+    "agreement_with_threshold_rule": 0.9789473684210527,
+    "median_p_value": 0.7875000000000001,
+    "mean_enrichment": 1.186834454536438,
+    "interpretation": "A small p-value means the concentration of power inside the period band is unlikely for a series with this pixel's own amplitude spectrum and random phases. It does NOT identify a cause: rotational cultivation, plantation harvest cycles, fire-regrowth cycles and multi-year climate oscillation all produce phase-coherent periodicity. Periodicity is not jhum."
+  },
+  "spatial_block_cv": {
+    "n_samples": 190,
+    "accuracy": 1.0,
+    "cohen_kappa": 1.0,
+    "precision_macro": 1.0,
+    "recall_macro": 1.0,
+    "f1_macro": 1.0,
+    "precision_weighted": 1.0,
+    "recall_weighted": 1.0,
+    "f1_weighted": 1.0,
+    "per_class": {
+      "1": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 40
+      },
+      "2": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 40
+      },
+      "3": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 40
+      },
+      "4": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 40
+      },
+      "5": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 30
+      }
+    },
+    "confusion_matrix": [
+      [
+        40,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        40,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        40,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        40,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        30
+      ]
+    ],
+    "labels": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "validation": "spatial_block_cv",
+    "fold_summary": {
+      "accuracy_mean": 1.0,
+      "accuracy_std": 0.0,
+      "precision_macro_mean": 1.0,
+      "precision_macro_std": 0.0,
+      "recall_macro_mean": 1.0,
+      "recall_macro_std": 0.0,
+      "f1_macro_mean": 1.0,
+      "f1_macro_std": 0.0,
+      "precision_weighted_mean": 1.0,
+      "precision_weighted_std": 0.0,
+      "recall_weighted_mean": 1.0,
+      "recall_weighted_std": 0.0,
+      "f1_weighted_mean": 1.0,
+      "f1_weighted_std": 0.0,
+      "cohen_kappa_mean": 1.0,
+      "cohen_kappa_std": 0.0,
+      "n_folds": 4
+    },
+    "n_evaluated": 190,
+    "n_unevaluated": 0,
+    "fold_accuracy_mean": 1.0,
+    "fold_accuracy_std": 0.0,
+    "uncertainty": {
+      "n_samples": 190,
+      "n_uncertain": 1,
+      "uncertain_fraction": 0.005263157894736842,
+      "confidence_threshold": 0.6,
+      "margin_threshold": 0.15,
+      "mean_confidence": 0.9391343984962406,
+      "median_confidence": 0.975,
+      "mean_margin": 0.8959442355889723,
+      "mean_normalised_entropy": 0.13443633688504578,
+      "disclaimer": "Model confidence estimates conditional on the training data, feature set and model family. They are relative scores, not calibrated probabilities and not certainty about the land surface.",
+      "accuracy_confident_subset": 1.0,
+      "accuracy_uncertain_subset": 1.0,
+      "confidence_is_informative": false
+    }
+  },
+  "random_split_baseline": {
+    "n_samples": 57,
+    "accuracy": 1.0,
+    "cohen_kappa": 1.0,
+    "precision_macro": 1.0,
+    "recall_macro": 1.0,
+    "f1_macro": 1.0,
+    "precision_weighted": 1.0,
+    "recall_weighted": 1.0,
+    "f1_weighted": 1.0,
+    "per_class": {
+      "1": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 12
+      },
+      "2": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 12
+      },
+      "3": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 12
+      },
+      "4": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 12
+      },
+      "5": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 9
+      }
+    },
+    "confusion_matrix": [
+      [
+        12,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        12,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        12,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        12,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        9
+      ]
+    ],
+    "labels": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "validation": "random_pixel_split_baseline",
+    "test_size": 0.3,
+    "caveat": "Random pixel splitting is spatially optimistic; the spatial block CV result is the primary validation."
+  },
+  "spatial_buffer_sensitivity": [
+    {
+      "buffer_blocks": 0,
+      "accuracy": 1.0,
+      "f1_macro": 1.0,
+      "fold_f1_macro_std": 0.0,
+      "n_evaluated": 190
+    }
+  ],
+  "explainability": {
+    "disclaimer": "Feature importance is predictive association inside a fitted model, not causal influence on the land surface. Correlated features share credit arbitrarily.",
+    "permutation": {
+      "method": "macro F1 drop when a feature is scrambled, measured on held-out spatial folds",
+      "repeats": 2,
+      "top": [
+        {
+          "feature": "amp",
+          "importance_mean": 0.0,
+          "importance_std": 0.0,
+          "n_folds": 4
+        },
+        {
+          "feature": "break_dslope",
+          "importance_mean": 0.0,
+          "importance_std": 0.0,
+          "n_folds": 4
+        },
+        {
+          "feature": "break_gain",
+          "importance_mean": 0.0,
+          "importance_std": 0.0,
+          "n_folds": 4
+        },
+        {
+          "feature": "break_t",
+          "importance_mean": 0.0,
+          "importance_std": 0.0,
+          "n_folds": 4
+        },
+        {
+          "feature": "breakpoint_index",
+          "importance_mean": 0.0,
+          "importance_std": 0.0,
+          "n_folds": 4
+        },
+        {
+          "feature": "breakpoint_significant",
+          "importance_mean": 0.0,
+          "importance_std": 0.0,
+          "n_folds": 4
+        },
+        {
+          "feature": "cv",
+          "importance_mean": 0.0,
+          "importance_std": 0.0,
+          "n_folds": 4
+        },
+        {
+          "feature": "cyc_band_power",
+          "importance_mean": 0.0,
+          "importance_std": 0.0,
+          "n_folds": 4
+        },
+        {
+          "feature": "cyc_enrichment",
+          "importance_mean": 0.0,
+          "importance_std": 0.0,
+          "n_folds": 4
+        },
+        {
+          "feature": "cyc_period",
+          "importance_mean": 0.0,
+          "importance_std": 0.0,
+          "n_folds": 4
+        },
+        {
+          "feature": "cyc_score",
+          "importance_mean": 0.0,
+          "importance_std": 0.0,
+          "n_folds": 4
+        },
+        {
+          "feature": "cyc_total_power",
+          "importance_mean": 0.0,
+          "importance_std": 0.0,
+          "n_folds": 4
+        },
+        {
+          "feature": "cyclicity_periodic",
+          "importance_mean": 0.0,
+          "importance_std": 0.0,
+          "n_folds": 4
+        },
+        {
+          "feature": "disturbance_magnitude",
+          "importance_mean": 0.0,
+          "importance_std": 0.0,
+          "n_folds": 4
+        },
+        {
+          "feature": "has_break",
+          "importance_mean": 0.0,
+          "importance_std": 0.0,
+          "n_folds": 4
+        },
+        {
+          "feature": "has_disturbance",
+          "importance_mean": 0.0,
+          "importance_std": 0.0,
+          "n_folds": 4
+        },
+        {
+          "feature": "maximum_ndvi",
+          "importance_mean": 0.0,
+          "importance_std": 0.0,
+          "n_folds": 4
+        },
+        {
+          "feature": "mean",
+          "importance_mean": 0.0,
+          "importance_std": 0.0,
+          "n_folds": 4
+        },
+        {
+          "feature": "median_ndvi",
+          "importance_mean": 0.0,
+          "importance_std": 0.0,
+          "n_folds": 4
+        },
+        {
+          "feature": "minimum_ndvi",
+          "importance_mean": 0.0,
+          "importance_std": 0.0,
+          "n_folds": 4
+        }
+      ]
+    },
+    "shap": {
+      "available": false,
+      "reason": "the optional 'shap' package is not installed or its tree explainer could not handle this model",
+      "n_samples": null,
+      "top": null
+    }
+  },
+  "experiment_matrix": [
+    {
+      "method": "baseline_trend",
+      "task": "binary_degradation",
+      "representation": "Mann-Kendall p + Sen slope sign",
+      "validation": "fixed rule (no training)",
+      "n_features": 2,
+      "accuracy": 0.9736842105263158,
+      "f1_macro": 0.9621136590229312,
+      "f1_weighted": 0.9742351891693342,
+      "precision_macro": 0.9444444444444444,
+      "recall_macro": 0.9833333333333334,
+      "cohen_kappa": 0.9243027888446215,
+      "fold_f1_macro_mean": 0.959729331504519,
+      "fold_f1_macro_std": 0.034908822011961466,
+      "n_evaluated": 190
+    },
+    {
+      "method": "rf_basic",
+      "task": "binary_degradation",
+      "representation": "basic vegetation features",
+      "validation": "spatial_block_cv",
+      "n_features": 9,
+      "accuracy": 0.9894736842105263,
+      "f1_macro": 0.9841666666666666,
+      "f1_weighted": 0.9894736842105263,
+      "precision_macro": 0.9841666666666666,
+      "recall_macro": 0.9841666666666666,
+      "cohen_kappa": 0.9683333333333334,
+      "fold_f1_macro_mean": 0.98431948751843,
+      "fold_f1_macro_std": 0.016197832219321497,
+      "n_evaluated": 190
+    },
+    {
+      "method": "rf_basic",
+      "task": "multiclass_trajectory",
+      "representation": "basic vegetation features",
+      "validation": "spatial_block_cv",
+      "n_features": 9,
+      "accuracy": 0.968421052631579,
+      "f1_macro": 0.970122675418034,
+      "f1_weighted": 0.9685501846505622,
+      "precision_macro": 0.9703658536585366,
+      "recall_macro": 0.97,
+      "cohen_kappa": 0.9604166666666667,
+      "fold_f1_macro_mean": 0.9683290154006268,
+      "fold_f1_macro_std": 0.0112176133786721,
+      "n_evaluated": 190
+    },
+    {
+      "method": "rf_proposed",
+      "task": "binary_degradation",
+      "representation": "proposed framework: trend + RESTREND + cyclicity + breakpoint/recovery",
+      "validation": "spatial_block_cv",
+      "n_features": 45,
+      "accuracy": 0.9947368421052631,
+      "f1_macro": 0.9920097565078431,
+      "f1_weighted": 0.9947122737665477,
+      "precision_macro": 0.9966887417218543,
+      "recall_macro": 0.9875,
+      "cohen_kappa": 0.9840201850294366,
+      "fold_f1_macro_mean": 0.9922870556673373,
+      "fold_f1_macro_std": 0.013359211460122132,
+      "n_evaluated": 190
+    },
+    {
+      "method": "rf_proposed",
+      "task": "multiclass_trajectory",
+      "representation": "proposed framework: trend + RESTREND + cyclicity + breakpoint/recovery",
+      "validation": "spatial_block_cv",
+      "n_features": 45,
+      "accuracy": 1.0,
+      "f1_macro": 1.0,
+      "f1_weighted": 1.0,
+      "precision_macro": 1.0,
+      "recall_macro": 1.0,
+      "cohen_kappa": 1.0,
+      "fold_f1_macro_mean": 1.0,
+      "fold_f1_macro_std": 0.0,
+      "n_evaluated": 190
+    },
+    {
+      "method": "cnn_1d",
+      "task": "binary_degradation",
+      "representation": "learned from the raw NDVI sequence",
+      "validation": "spatial_block_cv",
+      "n_features": 36,
+      "accuracy": 0.8571428571428571,
+      "f1_macro": 0.7385670731707317,
+      "f1_weighted": 0.8391768292682927,
+      "precision_macro": 0.8401253918495297,
+      "recall_macro": 0.7012987012987013,
+      "cohen_kappa": 0.4869109947643979,
+      "fold_f1_macro_mean": 0.7424611327836258,
+      "fold_f1_macro_std": 0.05355876771388657,
+      "n_evaluated": 98
+    },
+    {
+      "method": "cnn_1d",
+      "task": "multiclass_trajectory",
+      "representation": "learned from the raw NDVI sequence",
+      "validation": "spatial_block_cv",
+      "n_features": 36,
+      "accuracy": 0.7040816326530612,
+      "f1_macro": 0.6572607103041885,
+      "f1_weighted": 0.6673357254989908,
+      "precision_macro": 0.7097592332865824,
+      "recall_macro": 0.7048309178743961,
+      "cohen_kappa": 0.6302367941712204,
+      "fold_f1_macro_mean": 0.6382019647019647,
+      "fold_f1_macro_std": 0.10469547119547118,
+      "n_evaluated": 98
+    }
+  ],
+  "ablation": [
+    {
+      "experiment": "A",
+      "experiment_id": "A_basic_vegetation_6afad0775d",
+      "feature_set": "A_basic_vegetation",
+      "feature_groups": "vegetation",
+      "n_features": 9,
+      "n_evaluated": 190,
+      "accuracy": 0.968421052631579,
+      "precision_macro": 0.9703658536585366,
+      "recall_macro": 0.97,
+      "f1_macro": 0.970122675418034,
+      "f1_weighted": 0.9685501846505622,
+      "cohen_kappa": 0.9604166666666667,
+      "fold_f1_macro_mean": 0.9683290154006268,
+      "fold_f1_macro_std": 0.0112176133786721,
+      "fold_accuracy_mean": 0.9677773436773269,
+      "fold_accuracy_std": 0.011512938629386743
+    },
+    {
+      "experiment": "B",
+      "experiment_id": "B_basic_trend_30fdde67d4",
+      "feature_set": "B_basic_trend",
+      "feature_groups": "vegetation+trend",
+      "n_features": 14,
+      "n_evaluated": 190,
+      "accuracy": 0.9631578947368421,
+      "precision_macro": 0.9654878048780487,
+      "recall_macro": 0.9633333333333333,
+      "f1_macro": 0.9643262188742415,
+      "f1_weighted": 0.9633407121066948,
+      "cohen_kappa": 0.9538034039597082,
+      "fold_f1_macro_mean": 0.9595320025243299,
+      "fold_f1_macro_std": 0.03540503821295654,
+      "fold_accuracy_mean": 0.960354225967889,
+      "fold_accuracy_std": 0.03684135090878409
+    },
+    {
+      "experiment": "C",
+      "experiment_id": "C_add_restrend_c8d01d0559",
+      "feature_set": "C_add_restrend",
+      "feature_groups": "vegetation+trend+restrend",
+      "n_features": 19,
+      "n_evaluated": 190,
+      "accuracy": 1.0,
+      "precision_macro": 1.0,
+      "recall_macro": 1.0,
+      "f1_macro": 1.0,
+      "f1_weighted": 1.0,
+      "cohen_kappa": 1.0,
+      "fold_f1_macro_mean": 1.0,
+      "fold_f1_macro_std": 0.0,
+      "fold_accuracy_mean": 1.0,
+      "fold_accuracy_std": 0.0
+    },
+    {
+      "experiment": "D",
+      "experiment_id": "D_add_cyclicity_e7049c70b1",
+      "feature_set": "D_add_cyclicity",
+      "feature_groups": "vegetation+trend+restrend+cyclicity",
+      "n_features": 25,
+      "n_evaluated": 190,
+      "accuracy": 1.0,
+      "precision_macro": 1.0,
+      "recall_macro": 1.0,
+      "f1_macro": 1.0,
+      "f1_weighted": 1.0,
+      "cohen_kappa": 1.0,
+      "fold_f1_macro_mean": 1.0,
+      "fold_f1_macro_std": 0.0,
+      "fold_accuracy_mean": 1.0,
+      "fold_accuracy_std": 0.0
+    },
+    {
+      "experiment": "E",
+      "experiment_id": "E_add_disturbance_88d4ad30d9",
+      "feature_set": "E_add_disturbance",
+      "feature_groups": "vegetation+trend+restrend+cyclicity+disturbance+recovery",
+      "n_features": 40,
+      "n_evaluated": 190,
+      "accuracy": 1.0,
+      "precision_macro": 1.0,
+      "recall_macro": 1.0,
+      "f1_macro": 1.0,
+      "f1_weighted": 1.0,
+      "cohen_kappa": 1.0,
+      "fold_f1_macro_mean": 1.0,
+      "fold_f1_macro_std": 0.0,
+      "fold_accuracy_mean": 1.0,
+      "fold_accuracy_std": 0.0
+    },
+    {
+      "experiment": "F",
+      "experiment_id": "F_full_81b2c570c7",
+      "feature_set": "F_full",
+      "feature_groups": "vegetation+trend+restrend+cyclicity+disturbance+recovery+rainfall",
+      "n_features": 45,
+      "n_evaluated": 190,
+      "accuracy": 1.0,
+      "precision_macro": 1.0,
+      "recall_macro": 1.0,
+      "f1_macro": 1.0,
+      "f1_weighted": 1.0,
+      "cohen_kappa": 1.0,
+      "fold_f1_macro_mean": 1.0,
+      "fold_f1_macro_std": 0.0,
+      "fold_accuracy_mean": 1.0,
+      "fold_accuracy_std": 0.0
+    }
+  ],
+  "temporal_holdout": {
+    "n_samples": 41,
+    "accuracy": 0.6341463414634146,
+    "cohen_kappa": 0.5553145336225597,
+    "precision_macro": 0.7566666666666667,
+    "recall_macro": 0.6712121212121211,
+    "f1_macro": 0.622998054577002,
+    "precision_weighted": 0.8264227642276423,
+    "recall_weighted": 0.6341463414634146,
+    "f1_weighted": 0.6395658257018976,
+    "labels": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "validation": "temporal_holdout",
+    "cutoff_index": 23,
+    "n_historical_steps": 23,
+    "n_later_steps": 13,
+    "n_train": 149,
+    "n_test": 41,
+    "spatial_separation": "evaluation restricted to spatial fold 0; training uses the other folds",
+    "meaningful_on_this_dataset": false,
+    "limitation": "Synthetic pixels carry one static label for the whole record and the windows are short, so this score characterises the synthetic generator, not temporal generalization. Real multi-decadal data (M6/M7) are required before quoting a temporal-generalization result.",
+    "leakage_checks_passed": true
+  }
+}

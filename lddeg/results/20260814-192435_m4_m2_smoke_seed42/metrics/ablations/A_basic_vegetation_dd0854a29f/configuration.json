@@ -1,0 +1,40 @@
+{
+  "experiment": "A",
+  "name": "A_basic_vegetation",
+  "feature_groups": [
+    "vegetation"
+  ],
+  "features": [
+    "mean",
+    "median_ndvi",
+    "minimum_ndvi",
+    "maximum_ndvi",
+    "std",
+    "cv",
+    "amp",
+    "sen",
+    "ols_slope"
+  ],
+  "n_features": 9,
+  "model": {
+    "seed": 42,
+    "n_estimators": 40,
+    "min_samples_leaf": 2,
+    "max_features": "sqrt",
+    "class_weight": "none",
+    "imputation_strategy": "median",
+    "n_jobs": 1,
+    "block_cv": {
+      "block_size": 8,
+      "n_folds": 3,
+      "seed": 42,
+      "buffer_blocks": 0
+    }
+  },
+  "validation": {
+    "block_size": 8,
+    "n_folds": 3,
+    "seed": 42,
+    "buffer_blocks": 0
+  }
+}

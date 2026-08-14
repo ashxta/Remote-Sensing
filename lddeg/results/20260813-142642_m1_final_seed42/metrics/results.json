@@ -1,0 +1,79 @@
+{
+  "data_quality": {
+    "n_pixels": 60000,
+    "n_obs_per_pixel": 36,
+    "n_usable": 60000,
+    "usable_fraction": 1.0,
+    "mean_valid_observations": 36.0,
+    "mean_missing_fraction": 0.0,
+    "flag_counts": {
+      "OK": 60000,
+      "INSUFFICIENT_OBS": 0,
+      "TOO_MANY_MISSING": 0,
+      "CONSTANT": 0,
+      "OUT_OF_RANGE": 0
+    }
+  },
+  "recovery": {
+    "n_pixels": 60000,
+    "status_counts": {
+      "NO_DISTURBANCE": 12398,
+      "RECOVERED": 30630,
+      "RECOVERING": 371,
+      "NOT_RECOVERING": 12,
+      "INSUFFICIENT_DATA": 16589
+    },
+    "n_disturbed": 47602,
+    "median_recovery_duration": 2.0,
+    "median_recovery_fraction": 0.7932438692444143
+  },
+  "random_forest": {
+    "Accuracy": 0.9964328180737217,
+    "Kappa": 0.995518968456948,
+    "F1_macro": 0.9966666409463036
+  },
+  "cnn_1d": {
+    "Accuracy": 0.9988109393579072,
+    "Kappa": 0.9985063228189827,
+    "F1_macro": 0.9988888803154345
+  },
+  "method_comparison": {
+    "Stable high-NDVI": {
+      "n_pixels": 16043,
+      "pct_flagged_declining_by_mann_kendall": 4.812067568409899,
+      "pct_flagged_declining_by_restrend": 3.2288225394252947,
+      "pct_classified_correctly_by_rf": 100.0
+    },
+    "Cropland / grassland": {
+      "n_pixels": 27320,
+      "pct_flagged_declining_by_mann_kendall": 2.1046852122986826,
+      "pct_flagged_declining_by_restrend": 1.16398243045388,
+      "pct_classified_correctly_by_rf": 99.39238653001465
+    },
+    "Cyclic / periodic": {
+      "n_pixels": 15151,
+      "pct_flagged_declining_by_mann_kendall": 9.979539304336347,
+      "pct_flagged_declining_by_restrend": 2.118672034849185,
+      "pct_classified_correctly_by_rf": 99.03636723648604
+    },
+    "Declining": {
+      "n_pixels": 1083,
+      "pct_flagged_declining_by_mann_kendall": 99.44598337950139,
+      "pct_flagged_declining_by_restrend": 99.53831948291783,
+      "pct_classified_correctly_by_rf": 100.0
+    },
+    "Recovering": {
+      "n_pixels": 403,
+      "pct_flagged_declining_by_mann_kendall": 0.0,
+      "pct_flagged_declining_by_restrend": 0.0,
+      "pct_classified_correctly_by_rf": 100.0
+    }
+  },
+  "median_detected_period_steps": 7.199999809265137,
+  "productivity_trajectory": {
+    "pct_declining": 6.56,
+    "pct_stable": 90.1,
+    "pct_increasing": 3.34,
+    "n_assessed": 60000
+  }
+}
