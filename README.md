@@ -132,6 +132,11 @@ src/
   real_data.py        RealRemoteSensingSource -> StandardizedDataset
   real_report.py      real-data quality report and figures
   gee_export.py       Earth Engine acquisition (lazy import, no credentials)
+
+  -- M7: the real-world study
+  stac_source.py      anonymous Landsat C2 L2 + CHIRPS acquisition
+  m7_figures.py       publication cartography (validated CVD-safe palettes)
+  m7_outputs.py       maps, profiles, integrated table, findings, repro pack
 configs/              example real-data configuration
 data/boundaries/      study-area polygons (tracked; small and reproducibility-
                       critical)
@@ -146,8 +151,11 @@ run_pipeline.py       M1 end-to-end runner
 run_m2_experiments.py M2 research experiment runner
 run_m3_experiments.py M3 research evaluation runner
 run_real_data.py      M6 real-data runner (same analysis, different source)
-results/<id>/         one isolated directory per synthetic experiment
-results/real_data/<id>/  one isolated directory per real-data experiment
+run_m7_acquire.py     M7 acquisition: real Landsat + CHIRPS, no credentials
+run_m7_study.py       M7 final real-world research study
+results/<id>/                 one directory per synthetic experiment
+results/real_data/<id>/       one directory per M6 real-data experiment
+results/final_real_data/<id>/ the M7 final study
 ```
 
 Synthetic and real results live under **different roots** so the two can
@@ -726,6 +734,76 @@ Any run can be reproduced from its own snapshot with `--config`.
 pipeline runs to completion and records the CNN as *skipped with a reason*
 and SHAP as *unavailable* — neither is silently dropped, and neither can
 break a run.
+
+## 11a. The real-world study (M7)
+
+The framework has been run on **real observations**: 264 USGS Landsat
+Collection 2 Level-2 scenes (Landsat 5/7/8/9, 1990–2024, post-monsoon) and 35
+years of CHIRPS annual rainfall, over the configured Assam study extent.
+
+```bash
+python run_m7_acquire.py --config configs/m7_karbi_anglong_final.json
+python run_m7_study.py    --config configs/m7_karbi_anglong_final.json
+```
+
+**No credential is required.** Landsat comes from Microsoft Planetary
+Computer's anonymous STAC API (the pixels are the USGS product, redistributed
+unmodified as COGs); CHIRPS comes from the UCSB public server. This is what
+made M7 possible after M6 concluded — wrongly — that acquisition was blocked.
+
+Two constraints are baked into the frozen configuration and stated wherever a
+number is reported:
+
+- **300 m analysis grid, by nearest-neighbour subsampling of the 30 m record.**
+  Averaging to 300 m before masking would blend clear and cloudy native pixels
+  into a value no later mask could separate, and a QA bitmask cannot be
+  averaged at all. Subsampling keeps every cell a genuine 30 m observation with
+  its own exact QA flags — at the cost that each cell says nothing about the
+  other ~99 in its footprint.
+- **Calendar-year rainfall accumulation**, because CHIRPS monthly files are
+  gzipped and cannot be windowed over HTTP. The monsoon still precedes the
+  Oct–Dec composite, so the antecedent ordering RESTREND assumes holds.
+
+### Two findings that constrain everything else
+
+**RESTREND is largely inapplicable in this landscape.** The annual
+NDVI–rainfall correlation is centred slightly *negative* (median r ≈ −0.07),
+and only ~1.5 % of pixels meet r² ≥ 0.10 with a positive slope. That is
+expected: RESTREND was developed for drylands, and this is a ~2000 mm/yr humid
+forested landscape where canopy greenness is not moisture-limited and NDVI
+saturates. The `restrend_valid` gate detects this instead of reporting a
+meaningless residual as a "climate-adjusted trend". The consequence is
+reported explicitly: the `Degrading` class here is dominated by declines that
+could **not** be climate-adjusted, which is a weaker claim than declines shown
+to survive adjustment.
+
+**A residual sensor step survives harmonisation.** Roy et al. (2016) OLI→ETM+
+NDVI harmonisation is applied per scene, yet a step of ≈ +0.02 NDVI remains at
+the 2013 OLI transition. Spread across the record that is comparable in
+magnitude to the median per-pixel Sen slope, so **regional direction-of-change
+conclusions cannot be separated from residual sensor offset by this analysis**.
+`summary/sensor_confound.json` quantifies it in every run and the finding
+carries the caveat.
+
+### Supervised learning is BLOCKED BY DATA
+
+No independent reference labels exist for this study area, so Random Forest,
+the CNN, the A–F ablation, supervised spatial-CV metrics and error analysis are
+**not run** — they are recorded as `NOT SCIENTIFICALLY VALID / BLOCKED BY DATA`
+in `models/BLOCKED.json`. The analytical trajectory classes are *not*
+substituted: they are computed from the same features a classifier would
+consume, so accuracy against them would measure self-consistency.
+
+What replaces it is a **label-free comparison** that answers the project's
+actual question: how many pixels a conventional trend-only rule calls
+degradation that the integrated framework reassigns to rainfall variability,
+recurrent dynamics or recovered disturbance. That is measurable without labels
+and is the study's central result.
+
+Outputs land in `results/final_real_data/<id>/` following the M7 structure
+(`configuration/ data_quality/ temporal_analysis/ features/ models/
+validation/ ablation/ sensitivity/ uncertainty/ maps/ figures/ tables/ logs/
+summary/`).
 
 ## 11. Real satellite data (M6)
 

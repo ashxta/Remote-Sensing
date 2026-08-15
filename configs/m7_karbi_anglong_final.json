@@ -1,0 +1,133 @@
+{
+  "_frozen": "M7 FINAL EXPERIMENT CONFIGURATION. Frozen before any result was inspected. Every threshold below is inherited unchanged from the M1-M5 defaults that were validated on synthetic data; none was altered after seeing a real-data outcome. Two settings were changed for documented DATA-AVAILABILITY reasons and are marked _why below.",
+  "_why_resolution": "target_resolution_m = 300 rather than Landsat's native 30 m. A 35-year district-wide record at 30 m is several hundred GB and is not retrievable in one session. Scenes are read onto the 300 m grid by NEAREST-NEIGHBOUR SUBSAMPLING, so each analysis cell is one genuine 30 m observation carrying its own exact QA flags, not an average that would blend clear and cloudy pixels before masking. The consequence is that results are a spatial SUBSAMPLE of the 30 m record: a feature smaller than the sampling interval can be missed entirely.",
+  "_why_rainfall": "rainfall_accumulation = calendar_year rather than the configured hydrological_year default. CHIRPS monthly products are gzipped, which prevents windowed HTTP reads; only the annual products support them. The monsoon (Jun-Sep) still precedes the Oct-Dec NDVI composite, so the antecedent ordering RESTREND assumes is preserved, and no rain falling after the composite window enters the total.",
+  "_why_period": "1990-2024. Landsat Collection 2 covers the whole span with usable post-monsoon scenes in every year; CHIRPS annual currently ends at 2024.",
+  "experiment_name": "m7_karbi_anglong_final",
+  "seed": 42,
+  "deterministic": true,
+  "study_area": {
+    "name": "Karbi_Anglong_bbox",
+    "boundary": "data/boundaries/karbi_anglong_bbox.geojson",
+    "crs": "EPSG:4326",
+    "name_property": "",
+    "select": {},
+    "all_touched": false
+  },
+  "real_data": {
+    "sensors": [
+      "LANDSAT5_TM",
+      "LANDSAT7_ETM",
+      "LANDSAT8_OLI",
+      "LANDSAT9_OLI2"
+    ],
+    "harmonisation_reference": "LANDSAT7_ETM",
+    "harmonisation_overrides": {},
+    "index": "ndvi",
+    "extra_indices": [],
+    "start_year": 1990,
+    "end_year": 2024,
+    "temporal_unit": "annual",
+    "window_start": "10-15",
+    "window_end": "12-31",
+    "composite_statistic": "median",
+    "composite_percentile": 90.0,
+    "min_observations_per_composite": 1,
+    "mask_bits": [
+      "fill",
+      "dilated_cloud",
+      "cirrus",
+      "cloud",
+      "cloud_shadow",
+      "snow"
+    ],
+    "mask_saturated": true,
+    "strict_cloud_confidence": false,
+    "max_scene_cloud_cover": 80.0,
+    "rainfall_product": "CHIRPS-2.0 global annual",
+    "rainfall_variable": "precipitation",
+    "rainfall_units": "mm",
+    "rainfall_accumulation": "calendar_year",
+    "rainfall_resampling": "bilinear",
+    "target_resolution_m": 300.0,
+    "target_crs": "auto",
+    "cache_dir": "data/processed",
+    "raw_dir": "data/raw/m7_karbi_anglong",
+    "composite_dir": "data/composites",
+    "metadata_dir": "data/metadata",
+    "ndvi_cube": "data/composites/Karbi_Anglong_bbox_ndvi_annual_1990_2024_ndvi.tif",
+    "rain_cube": "data/composites/Karbi_Anglong_bbox_ndvi_annual_1990_2024_rain.tif",
+    "reuse_cache": true,
+    "allow_interpolation": false,
+    "max_interpolation_gap": 2,
+    "reference": {
+      "path": "",
+      "validation_path": "",
+      "classes": {},
+      "degradation_classes": [],
+      "source": "",
+      "provenance": "",
+      "resampling": "nearest",
+      "notes": "EMPTY. No independent reference labels exist for this study area. Supervised experiments (Random Forest, CNN, ablation, spatial-CV metrics, discrimination) are therefore reported as BLOCKED BY DATA, not run. The analytical trajectory classes must NOT be substituted: they are computed from the same features a classifier would consume, so any accuracy against them measures self-consistency."
+    },
+    "backend": "stac",
+    "gee_project": "",
+    "export_target": "local",
+    "export_folder": "",
+    "max_export_pixels": 10000000000.0
+  },
+  "_acquisition": {
+    "archive": "Microsoft Planetary Computer, collection landsat-c2-l2",
+    "product": "USGS Landsat Collection 2 Level-2 Science Products",
+    "authentication": "none; anonymous STAC search and anonymously-issued read tokens",
+    "scenes_per_year": 8,
+    "scene_selection": "least cloudy first, applied identically to every year",
+    "overview_policy": "coarsest COG overview still finer than the analysis grid"
+  },
+  "quality": {
+    "min_valid_obs": 10,
+    "max_missing_fraction": 0.4,
+    "min_variance": 1e-08,
+    "ndvi_min": -1.0,
+    "ndvi_max": 1.0,
+    "allow_interpolation": false,
+    "max_interpolation_gap": 2
+  },
+  "trend": {
+    "alpha": 0.05,
+    "apply_ties_correction": true,
+    "apply_autocorrelation_correction": true,
+    "hr_significance_level": 0.05,
+    "hr_max_lag_fraction": 0.5,
+    "min_obs": 10
+  },
+  "restrend": {
+    "alpha": 0.05,
+    "min_r2": 0.1,
+    "require_positive_beta": true,
+    "min_obs": 10
+  },
+  "cyclicity": {
+    "min_period": 4.0,
+    "max_period": 12.0,
+    "detrend": true,
+    "periodicity_threshold": 2.0,
+    "min_obs": 12,
+    "surrogate_test": false,
+    "n_surrogates": 199,
+    "surrogate_alpha": 0.05,
+    "surrogate_seed": 42
+  },
+  "breakpoint": {
+    "min_segment_length": 4,
+    "min_variance_gain": 0.05,
+    "significance_alpha": 0.05,
+    "apply_significance_test": true
+  },
+  "recovery": {
+    "recovery_threshold": 0.8,
+    "min_disturbance_magnitude": 0.05,
+    "min_post_obs": 3,
+    "pre_window": 3
+  }
+}

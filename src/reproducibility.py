@@ -105,10 +105,15 @@ class Experiment:
     root: Path
     config: Config
     logger: logging.Logger
+    #: Directories this experiment may write to. Defaults to the standard
+    #: tree; M7 passes its own so the final study's outputs follow the
+    #: structure the research report references.
+    subdirs: tuple = SUBDIRS
 
     def path(self, subdir: str, filename: str = "") -> Path:
-        if subdir not in SUBDIRS:
-            raise ValueError(f"unknown subdir {subdir!r}; expected {SUBDIRS}")
+        if subdir not in self.subdirs:
+            raise ValueError(
+                f"unknown subdir {subdir!r}; expected {self.subdirs}")
         d = self.root / subdir
         d.mkdir(parents=True, exist_ok=True)
         return d / filename if filename else d
@@ -167,16 +172,25 @@ def _unique_root(results_root: Path, experiment_id: str) -> Path:
 
 def start_experiment(config: Config | None = None,
                      experiment_id: str | None = None,
-                     results_root: Path | None = None) -> Experiment:
-    """Create the result tree, seed RNGs, snapshot config + environment."""
+                     results_root: Path | None = None,
+                     subdirs: tuple | None = None) -> Experiment:
+    """Create the result tree, seed RNGs, snapshot config + environment.
+
+    `subdirs` overrides the standard directory set. The config snapshot and
+    the log always land in the first directory named and in `logs`, so those
+    two must be present in any custom set.
+    """
     config = config or Config()
     set_seed(config.seed, config.deterministic)
+    tree = tuple(subdirs) if subdirs else SUBDIRS
+    if "logs" not in tree:
+        raise ValueError("an experiment tree must include a 'logs' directory")
 
     eid = experiment_id or make_experiment_id(config.experiment_name,
                                               config.seed)
     root = _unique_root(Path(results_root or config.paths.results), eid)
     eid = root.name
-    for sub in SUBDIRS:
+    for sub in tree:
         (root / sub).mkdir(parents=True, exist_ok=True)
 
     logger = logging.getLogger(f"lddeg.{eid}")
@@ -192,9 +206,10 @@ def start_experiment(config: Config | None = None,
     logger.addHandler(fh)
     logger.addHandler(sh)
 
-    config.save(root / "config" / "config.json")
-    (root / "config" / "environment.json").write_text(
+    snapshot = root / ("config" if "config" in tree else tree[0])
+    config.save(snapshot / "config.json")
+    (snapshot / "environment.json").write_text(
         json.dumps(environment_snapshot(), indent=2))
 
     logger.info("experiment %s started (seed=%d)", eid, config.seed)
-    return Experiment(eid, root, config, logger)
+    return Experiment(eid, root, config, logger, subdirs=tree)

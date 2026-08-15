@@ -1,19 +1,68 @@
-# Real-data setup (M6)
+# Real-data setup (M6/M7)
 
-How to get genuine satellite and rainfall data into the pipeline. Two
+How to get genuine satellite and rainfall data into the pipeline. Three
 routes are supported and they run **the same preprocessing code**; only the
 place the arithmetic happens differs.
 
-| | Local | Earth Engine |
-|---|---|---|
-| Account needed | no | yes (free, non-commercial) |
-| Download volume | large (raw scenes) | small (finished cubes) |
-| Reproducible by a reader | needs the same scene list | yes, from the config |
-| Status in this repo | **exercised end to end** on fixture scenes | **not executed** — see below |
+| | STAC (M7) | Local | Earth Engine |
+|---|---|---|---|
+| Account needed | **no** | no | yes (free, non-commercial) |
+| Download volume | small (windowed COG reads) | large (raw scenes) | small (finished cubes) |
+| Reproducible by a reader | yes, from the config | needs the same scene list | yes, from the config |
+| Status in this repo | **used for the real M7 study** | exercised on fixture scenes | **not executed** |
 
 ---
 
-## Status, stated plainly
+## Route 0 (recommended): STAC, no credentials — what M7 actually used
+
+**Microsoft Planetary Computer** hosts the USGS Landsat Collection 2 Level-2
+archive as Cloud-Optimized GeoTIFFs behind an **anonymous** STAC API, and
+issues read tokens without an account. The pixels are the USGS product — same
+scene identifiers, same scale factors, same `QA_PIXEL` band — only the
+delivery differs. CHIRPS annual rainfall comes from the UCSB public server the
+same way.
+
+```bash
+python run_m7_acquire.py --config configs/m7_karbi_anglong_final.json \
+                         --per-year 8 --workers 8
+python run_m7_study.py    --config configs/m7_karbi_anglong_final.json
+```
+
+This acquired **264 real scenes across 1990–2024** (Landsat 5/7/8/9) plus 35
+years of CHIRPS in about six minutes, with zero failures. It writes exactly
+the `scenes.json` / `rainfall.json` manifests that
+`real_data.preprocess_real_data` already reads, so **none of the M6
+preprocessing changed**.
+
+### Two things that make it fast enough to matter
+
+**COG overview selection.** Warping a full-resolution 8031×6981 scene onto a
+300 m grid made GDAL fetch every tile it touched — measured at **155 s per
+scene**, i.e. 33 hours for the record. Reading the coarsest overview still
+finer than the analysis grid (8× = 240 m) fetches roughly 1/64 of the bytes:
+**2.4 s per scene**. `_choose_overview` never picks an overview *coarser* than
+the target, which would upsample and invent detail the read never retrieved.
+
+**Nearest-neighbour subsampling, not averaging** — a scientific choice, not a
+performance one. Averaging reflectance to 300 m *before* the cloud mask is
+applied would blend clear and cloudy native pixels into a value no later
+masking could separate, and a QA bitmask cannot be averaged at all. Each
+analysis cell is therefore one genuine 30 m observation with its own exact QA
+flags — and says nothing about the other ~99 in its footprint.
+
+### A bug worth knowing about
+
+`QA_PIXEL` and `QA_RADSAT` use **opposite conventions**. Outside a scene
+footprint the warp fills 0; for `QA_PIXEL` that is not a valid quality word
+(no fill bit, no reject bit set), so it must be marked as fill. For
+`QA_RADSAT`, 0 means *not saturated* — i.e. good. Applying the same
+substitution to both marked every pixel saturated and produced a
+**100 %-missing record** from 264 perfectly good scenes.
+`tests/test_m7_acquisition.py` locks this so it cannot return.
+
+---
+
+## Status of the other two routes
 
 `earthengine-api` is **not installed** in this development environment and
 no Earth Engine credential exists here. The Earth Engine path in

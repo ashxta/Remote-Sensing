@@ -454,7 +454,7 @@ def main(cfg: Config | None = None, *, source=None):
             prepared.rain_series[:, sample_mask],
             exp.path("metrics", "sensitivity"), cfg,
             labels=labels[sample_mask], fold_grid=folds[sample_mask],
-            logger=log)
+            data_status=NOTICE.strip(), logger=log)
         RF.plot_sensitivity(sensitivity, exp.figure("sensitivity.png"))
         results["sensitivity_rows"] = int(len(sensitivity))
 

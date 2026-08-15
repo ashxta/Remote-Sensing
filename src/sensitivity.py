@@ -132,6 +132,7 @@ def run_sensitivity_analysis(ndvi, rain, output_dir, cfg: Config | None = None,
                              *, labels=None, fold_grid=None, sample_mask=None,
                              parameters: Sequence[ParameterSweep] | None = None,
                              evaluate_model: bool | None = None,
+                             data_status: str | None = None,
                              logger=None) -> pd.DataFrame:
     """Run every configured parameter scenario and save the results.
 
@@ -201,7 +202,10 @@ def run_sensitivity_analysis(ndvi, rain, output_dir, cfg: Config | None = None,
         "model_evaluated": bool(evaluate_model),
         "spread_by_parameter": spread,
         "note": ("Scenarios are reported, not optimised: no parameter is "
-                 "selected by comparing test-set metrics. Development/"
-                 "testing outputs on synthetic data."),
+                 "selected by comparing test-set metrics."),
+        # The caller states the provenance. Hard-coding "synthetic" here
+        # would stamp that label onto real-data results.
+        "data_status": data_status or ("unspecified; the caller did not "
+                                       "declare the data provenance"),
     }, indent=2, default=str))
     return table

@@ -8,6 +8,12 @@ pymannkendall>=1.4
 streamlit>=1.35
 torch>=2.2            # 1D-CNN only; use --no-cnn without it
 shap>=0.44            # optional explainability; skipped cleanly if absent
+# --- M7 real-world study --------------------------------------------------
+# The real Landsat/CHIRPS acquisition used by run_m7_acquire.py adds NO new
+# dependency: STAC search is stdlib urllib, and the Cloud-Optimized GeoTIFFs
+# are read through rasterio's existing GDAL bindings. No account, no token,
+# no client library.
+
 # --- M6 real-data mode ----------------------------------------------------
 # Boundary handling, reprojection, rasterisation and CRS work all go through
 # rasterio's own GDAL/PROJ bindings, so real-data ingestion needs NO extra
