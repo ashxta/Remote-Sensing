@@ -31,10 +31,43 @@ __all__ = ["write_maps", "write_profiles", "write_integrated_table",
            "write_findings", "write_reproducibility_package",
            "select_representative_pixels"]
 
-SOURCE = ("Data: USGS Landsat Collection 2 Level-2 (Landsat 5/7/8/9) via "
-          "Microsoft Planetary Computer; CHIRPS v2.0 annual rainfall. "
-          "Nearest-neighbour subsample of the 30 m record onto a 300 m grid. "
-          "Analytical signal categories, not verified land cover.")
+#: Credit line stamped on every figure. The SAMPLING clause is filled in
+#: from the run's own acquisition record rather than hard-coded, because a
+#: constant here kept asserting nearest-neighbour subsampling after the
+#: pipeline had stopped doing it - a caption that contradicts the method is
+#: as misleading as a wrong number.
+_SOURCE_TEMPLATE = (
+    "Data: USGS Landsat Collection 2 Level-2 (Landsat 5/7/8/9) via "
+    "Microsoft Planetary Computer; CHIRPS v2.0 annual rainfall. {sampling} "
+    "Analytical signal categories, not verified land cover.")
+
+_DEFAULT_SAMPLING = ("30 m pixels masked at native resolution and averaged "
+                     "into 300 m analysis cells.")
+
+SOURCE = _SOURCE_TEMPLATE.format(sampling=_DEFAULT_SAMPLING)
+
+
+def source_line(cfg=None) -> str:
+    """The credit line, describing what this run actually did."""
+    sampling = _DEFAULT_SAMPLING
+    if cfg is not None:
+        try:
+            record = (Path(cfg.real_data.metadata_dir)
+                      / "m7_acquisition.json")
+            if record.exists():
+                landsat = json.loads(record.read_text()).get("landsat", {})
+                factor = landsat.get("aggregate_factor", 1)
+                native = cfg.real_data.target_resolution_m / max(factor, 1)
+                sampling = (
+                    f"{native:.0f} m pixels masked at native resolution and "
+                    f"averaged into "
+                    f"{cfg.real_data.target_resolution_m:.0f} m analysis "
+                    f"cells." if factor > 1 else
+                    f"Nearest-neighbour subsample onto a "
+                    f"{cfg.real_data.target_resolution_m:.0f} m grid.")
+        except Exception:                                # pragma: no cover
+            pass
+    return _SOURCE_TEMPLATE.format(sampling=sampling)
 
 
 def _grid(prepared, values, fill=np.nan) -> np.ndarray:
@@ -52,6 +85,9 @@ def _write(path: Path, payload) -> Path:
 # ---------------------------------------------------------------------------
 def write_maps(prepared, descriptive, areas, exp, cfg, log) -> List[Path]:
     """The Part-21 map set, every panel with full cartographic furniture."""
+    # Local name deliberately shadows the module default: the credit line
+    # must describe THIS run's sampling, not a constant.
+    SOURCE = source_line(cfg)
     georef = prepared.georef
     features = prepared.features
     figures = exp.path("figures")
@@ -234,6 +270,7 @@ def select_representative_pixels(prepared, cfg, *, min_valid: int = 25
 
 def write_profiles(prepared, exp, cfg, log) -> List[Path]:
     """Representative temporal profiles per trajectory class (Part 22)."""
+    SOURCE = source_line(cfg)
     features = prepared.features
     dataset = prepared.dataset
     times = [str(t) for t in dataset.times]
@@ -254,7 +291,7 @@ def write_profiles(prepared, exp, cfg, log) -> List[Path]:
         written.append(MF.temporal_profile(
             times, prepared.series[:, row], prepared.rain_series[:, row],
             figures / f"20_profile_{index:02d}_{safe}.png",
-            title=f"Representative pixel — {name}",
+            title=f"Representative pixel â€” {name}",
             subtitle=(f"row {record['grid_row']}, col {record['grid_col']}; "
                       f"{record['n_valid_observations']} valid composites; "
                       f"most typical of {record['n_candidates']} pixels in "
@@ -396,6 +433,13 @@ def write_findings(results, exp, cfg, log) -> Path:
                 f"A residual decline persists over "
                 f"{by_category['decline_persists_after_climate_adjustment']['area_km2']:,.0f} km2."),
             "applicability_finding": restrend["applicability"]["assessment"],
+            "why_pixels_were_excluded": restrend.get(
+                "why_pixels_were_excluded", {}),
+            "what_the_valid_subset_shows": restrend.get(
+                "what_the_valid_subset_shows", {}).get(
+                "what_it_indicates", ""),
+            "limits_of_a_rainfall_only_adjustment": restrend.get(
+                "limits_of_a_rainfall_only_adjustment", ""),
             "consequence": restrend["applicability"][
                 "consequence_for_the_trajectory_classes"],
             "interpretation_limit": (
@@ -555,10 +599,18 @@ def write_findings(results, exp, cfg, log) -> Path:
             "untested.",
             "That the areas identified are degraded land. They are areas of "
             "persistent vegetation decline not explained by the modelled "
-            "rainfall relationship.",
-            "That recurrent behaviour is shifting cultivation.",
+            "rainfall relationship - and that relationship is itself valid "
+            "on only a small share of the area.",
+            "That recurrent behaviour is shifting cultivation. Equally, the "
+            "low detected cyclic area does NOT show that rotational "
+            "cultivation is rare: the analysis cell is far larger than a "
+            "cultivation plot, and averaging cancels out-of-phase cycles.",
             "That the framework generalises beyond this study area, this "
-            "period, or this sampling resolution.",
+            "period, or this spatial resolution.",
+            "That the published OLI harmonisation is appropriate for this "
+            "land cover. Measured on near-simultaneous cross-sensor pairs it "
+            "overcorrects; the residual is carried as a bounded systematic "
+            "uncertainty rather than removed.",
         ],
         "is_the_novelty_claim_supported": (
             "Combining published algorithms is not itself novel, and this "
@@ -588,12 +640,46 @@ def write_findings(results, exp, cfg, log) -> Path:
               "ground truth."),
     }
 
+    limitations = {
+        "spatial_resolution": (
+            "Analysis cells are 300 m, built by masking at native 30 m and "
+            "averaging the valid pixels. Full native 30 m analysis was "
+            "benchmarked and found impractical for this record, not assumed "
+            "so. Features smaller than a cell - individual cultivation "
+            "plots, narrow riparian strips, small clearings - are averaged "
+            "with their surroundings and can be invisible."),
+        "reference_data": (
+            "No independent labels exist for this study area, so every "
+            "supervised experiment is blocked and no accuracy of any kind is "
+            "reported. This is the single largest limitation and it bounds "
+            "what the whole project can claim."),
+        "sensor_harmonisation": (
+            "The record spans four instruments. The published Roy et al. "
+            "(2016) transform is applied but was measured to overcorrect for "
+            "this high-NDVI landscape; the residual is carried as a bounded "
+            "systematic uncertainty. See summary/sensor_confound.json."),
+        "climate_variables": (
+            "The climate adjustment uses annual rainfall only. Temperature, "
+            "vapour pressure deficit, radiation, soil moisture, rainfall "
+            "timing and CO2 are not represented, and in a humid landscape "
+            "those are where most of the relevant climate signal lives."),
+        "boundary": (
+            "The administrative polygon is from geoBoundaries, an open "
+            "compilation, not from the Survey of India. Area statistics "
+            "depend on it."),
+        "attribution": (
+            "Nothing here establishes cause. Trends, residual trends, "
+            "recurrence, breakpoints and recovery are descriptions of the "
+            "vegetation record."),
+    }
+
     document = {
         "study": "Remote Sensing-Based Detection of Land Degradation and "
                  "Vegetation Dynamics Using Multi-Temporal Geospatial Data",
         "phase": "M7 final real-world research execution",
         "data_status": "REAL remote-sensing observations",
         "findings": findings,
+        "limitations": limitations,
         "research_gap_validation": contribution,
         "terminology_policy": {
             "used": ["persistent vegetation decline",
@@ -609,7 +695,7 @@ def write_findings(results, exp, cfg, log) -> Path:
     }
     path = _write(exp.path("summary") / "findings.json", document)
 
-    lines = ["# M7 findings — real-data study", "",
+    lines = ["# M7 findings â€” real-data study", "",
              f"**Data status:** {document['data_status']}", ""]
     for key, block in findings.items():
         heading = key.replace("_", " ").replace("finding ", "Finding ")
@@ -622,6 +708,10 @@ def write_findings(results, exp, cfg, log) -> Path:
             else:
                 lines.append(f"- **{field}:** {text}")
         lines.append("")
+    lines.append("## Limitations")
+    for field, value in limitations.items():
+        lines.append(f"- **{field}:** {value}")
+    lines.append("")
     lines.append("## Research-gap validation")
     for field, value in contribution.items():
         if isinstance(value, list):
@@ -688,3 +778,4 @@ def write_reproducibility_package(cfg, exp, results, log) -> Path:
     path = _write(exp.path("configuration") / "reproducibility.json", package)
     log.info("reproducibility package written")
     return path
+

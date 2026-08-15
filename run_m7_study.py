@@ -147,11 +147,24 @@ def stage_dataset(cfg, area, exp, log):
     return prepared
 
 
-def stage_quality(prepared, cfg, exp, log):
+def stage_quality(prepared, cfg, exp, log, *, area=None):
     """Data-quality verification and report (Parts 2, 14)."""
     dataset = prepared.dataset
-    report = build_quality_report(dataset, cfg)
-    written = write_quality_report(report, exp.path("data_quality"))
+    # Restrict every statistic to the study-area polygon. Outside it the
+    # cube is NaN by construction, and counting that as missing data would
+    # misreport a ~4% record as ~52% missing.
+    inside = None
+    if area is not None:
+        try:
+            inside = area.mask(dataset.georef)
+        except Exception as error:                       # pragma: no cover
+            log.warning("could not build the boundary mask: %s", error)
+    report = build_quality_report(dataset, cfg, inside=inside)
+    if inside is not None:
+        report["_inside_mask"] = inside
+    written = write_quality_report(
+        {k: v for k, v in report.items() if not k.startswith("_")},
+        exp.path("data_quality"))
     _write(exp.path("data_quality") / "quality_gate.json",
            prepared.quality_summary)
 
@@ -426,8 +439,74 @@ def stage_restrend(prepared, cfg, exp, log):
     positive = float(np.nanmean(correlation > 0))
     applicable = bool(valid.mean() >= 0.25)
 
+    # WHY each excluded pixel was excluded. "Only 2.5% valid" is not a
+    # finding until the reader knows which criterion did the rejecting -
+    # a weak fit and a wrong-signed sensitivity mean different things.
+    r_squared = features["restrend_r2"].to_numpy()
+    beta = features["restrend_beta"].to_numpy()
+    n_valid_obs = features["n_valid_ndvi"].to_numpy()
+    fails_r2 = np.isfinite(r_squared) & (r_squared < cfg.restrend.min_r2)
+    fails_beta = (np.isfinite(beta) & (beta <= 0)
+                  if cfg.restrend.require_positive_beta
+                  else np.zeros(len(beta), bool))
+    fails_obs = n_valid_obs < cfg.restrend.min_obs
+    not_finite = ~np.isfinite(r_squared)
+    exclusions = {
+        "insufficient_valid_observations": {
+            "n": int((~valid & fails_obs).sum()),
+            "criterion": f"n_valid_ndvi < restrend.min_obs "
+                         f"({cfg.restrend.min_obs})"},
+        "rainfall_relation_too_weak": {
+            "n": int((~valid & fails_r2 & ~fails_obs).sum()),
+            "criterion": f"partial r2 < restrend.min_r2 "
+                         f"({cfg.restrend.min_r2})"},
+        "rainfall_sensitivity_not_positive": {
+            "n": int((~valid & fails_beta & ~fails_r2 & ~fails_obs).sum()),
+            "criterion": "NDVI decreases with rainfall, so the regression "
+                         "cannot be read as a moisture-limitation response"},
+        "regression_not_estimable": {
+            "n": int((~valid & not_finite).sum()),
+            "criterion": "the fit produced no finite r2"},
+    }
+    valid_area = float(areas[valid].sum())
+    valid_subset = {
+        "n_pixels": int(valid.sum()),
+        "area_km2": valid_area,
+        "median_r2": float(np.nanmedian(r_squared[valid]))
+        if valid.any() else float("nan"),
+        "median_rainfall_sensitivity": float(np.nanmedian(beta[valid]))
+        if valid.any() else float("nan"),
+        "n_with_significant_residual_decline": int(
+            (valid & residual_declining).sum()),
+        "area_with_significant_residual_decline_km2": float(
+            areas[valid & residual_declining].sum()),
+        "what_it_indicates": (
+            "Within this subset - and only within it - the residual trend is "
+            "interpretable as a climate-adjusted trend, because the "
+            "NDVI~rainfall regression that defines the adjustment is itself "
+            "meaningful there. Everywhere else the residual is numerically "
+            "computable but scientifically empty, and is reported as such "
+            "rather than mapped."),
+    }
+
     summary = {
         "restrend_valid_fraction": float(valid.mean()),
+        "restrend_valid_area_km2": valid_area,
+        "restrend_excluded_area_km2": float(areas[~valid].sum()),
+        "why_pixels_were_excluded": exclusions,
+        "what_the_valid_subset_shows": valid_subset,
+        "limits_of_a_rainfall_only_adjustment": (
+            "RESTREND removes only the variance a LINEAR ANNUAL RAINFALL "
+            "model explains. It does not account for temperature, vapour "
+            "pressure deficit, incoming radiation, soil moisture storage, "
+            "rainfall timing and intensity within the year, antecedent "
+            "conditions beyond the accumulation window, CO2 fertilisation, "
+            "or nutrient limitation. A residual trend is therefore 'not "
+            "explained by the modelled rainfall relationship', which is a "
+            "much weaker statement than 'not explained by climate' and far "
+            "weaker than 'human-caused'. In a humid landscape where water is "
+            "not the limiting factor, most of the climate signal that "
+            "matters is in variables this adjustment never sees."),
         "applicability": {
             "restrend_is_broadly_applicable_here": applicable,
             "median_ndvi_rainfall_correlation": float(
@@ -550,19 +629,55 @@ def stage_cyclicity(prepared, cfg, exp, log):
             "this band. PERIODICITY IS NOT JHUM. Attribution to shifting "
             "cultivation requires independent ground or ancillary evidence, "
             "which this study does not have."),
-        "detectability_limit": (
-            "THE LOW CYCLIC FRACTION IS NOT EVIDENCE THAT ROTATIONAL "
-            "CULTIVATION IS ABSENT. One analysis cell here is "
-            f"{cfg.real_data.target_resolution_m:.0f} m on a side "
-            f"({(cfg.real_data.target_resolution_m ** 2) / 1e4:.0f} ha), and "
-            "it carries the value of a single 30 m pixel sampled from within "
-            "it. Individual shifting-cultivation plots in this region are "
-            "typically a small fraction of that area, so a cultivation cycle "
-            "occupying part of a cell would be diluted or missed entirely "
-            "depending on where the sample point fell. Detecting field-scale "
-            "rotation needs the native 30 m grid, and preferably spatial "
-            "aggregation designed for it. This analysis can only see "
-            "recurrence that operates at or above its own sampling scale."),
+        "detectability_limit": {
+            "headline": (
+                "THE LOW CYCLIC FRACTION IS NOT EVIDENCE THAT ROTATIONAL "
+                "CULTIVATION IS ABSENT. It is consistent with the phenomenon "
+                "being below the resolution of this analysis."),
+            "spatial": (
+                f"One analysis cell is "
+                f"{cfg.real_data.target_resolution_m:.0f} m on a side "
+                f"({(cfg.real_data.target_resolution_m ** 2) / 1e4:.0f} ha) "
+                f"and averages the valid 30 m pixels inside it. Individual "
+                f"shifting-cultivation plots in this region are typically a "
+                f"small fraction of that area, so a plot on its own cycle is "
+                f"averaged together with surrounding land on a different "
+                f"phase or none at all. Averaging cancels out-of-phase "
+                f"cycles, which suppresses band power - the statistic the "
+                f"detection rests on. Resolving field-scale rotation "
+                f"requires the native 30 m grid."),
+            "temporal": (
+                f"With {prepared.dataset.n_time} annual steps, a cycle must "
+                f"repeat at least twice to be distinguishable from a trend, "
+                f"so periods above about "
+                f"{prepared.dataset.n_time / 2:.0f} years are not "
+                f"detectable, and the configured upper edge of "
+                f"{cfg.cyclicity.max_period:.0f} years sits comfortably "
+                f"inside that. The annual step means sub-annual and "
+                f"single-season regrowth signals are invisible by "
+                f"construction."),
+            "observational": (
+                f"{int((features['n_valid_ndvi'].to_numpy() < cfg.cyclicity.min_obs).sum()):,} "
+                f"analysed pixels have fewer than the "
+                f"{cfg.cyclicity.min_obs} valid observations the periodicity "
+                f"estimator requires and cannot be tested at all. Gaps also "
+                f"broaden the spectrum, which lowers measured enrichment and "
+                f"biases this statistic toward FALSE NEGATIVES rather than "
+                f"false positives."),
+            "what_may_be_concluded": (
+                "'Recurrent vegetation dynamics were detected on X km2 at "
+                "this scale' is supportable. 'Shifting cultivation was "
+                "confirmed' is not, and neither is 'shifting cultivation is "
+                "rare here' - this analysis cannot see the scale at which "
+                "the practice operates."),
+            "thresholds_unchanged": (
+                f"The enrichment threshold remains at the M1-M5 default of "
+                f"{cfg.cyclicity.periodicity_threshold} and the band at "
+                f"{cfg.cyclicity.min_period:.0f}-"
+                f"{cfg.cyclicity.max_period:.0f} years. Neither was adjusted "
+                f"to increase the detected area; the sensitivity sweep "
+                f"reports what other values would have produced."),
+        },
     }
     _write(exp.path("summary") / "cyclicity.json", summary)
     log.info("cyclicity: %.1f%% periodic by threshold, %.1f%% significant "
@@ -691,6 +806,23 @@ def stage_sensor_confound(prepared, cfg, exp, log):
              if median_slope not in (0.0,) and np.isfinite(median_slope)
              else float("nan"))
 
+    # The paired cross-sensor measurement, when it exists, is far stronger
+    # evidence than this annual-mean step: a step confounds the instrument
+    # change with real vegetation change, whereas near-simultaneous pairs
+    # isolate the instrument. If the two point in OPPOSITE directions, the
+    # sensor cannot be manufacturing the step.
+    paired = {}
+    for candidate in ("sensor_harmonisation_check.json",
+                      "sensor_harmonisation_check_original.json"):
+        path = Path(cfg.real_data.metadata_dir) / candidate
+        if path.exists():
+            paired = json.loads(path.read_text())
+            break
+    residual = None
+    if paired.get("with_harmonisation", {}).get("n_pairs"):
+        residual = float(paired["with_harmonisation"][
+            "pooled_median_oli_minus_etm"])
+
     summary = {
         "assessed": True,
         "first_year_with_oli": first_oli,
@@ -705,27 +837,43 @@ def stage_sensor_confound(prepared, cfg, exp, log):
         "harmonisation_applied": (
             "Roy et al. (2016) OLS transform, OLI NDVI -> ETM+ NDVI, applied "
             "per scene before compositing"),
+        "paired_cross_sensor_residual_ndvi": residual,
+        "paired_measurement": paired.get("verdict"),
         "assessment": (
-            f"A residual step of {step:+.4f} NDVI remains at the OLI "
-            f"transition ({first_oli}) after harmonisation (Welch "
-            f"t = {t_statistic:.2f}). Spread across the record this is "
-            f"equivalent to about {equivalent:+.5f} NDVI/yr, which is "
-            f"{ratio:.1f}x the median per-pixel Sen slope of "
-            f"{median_slope:+.5f} NDVI/yr. "
-            + ("BECAUSE THAT RATIO IS OF ORDER ONE OR MORE, THE REGIONAL "
-               "GREENING SIGNAL CANNOT BE SEPARATED FROM RESIDUAL SENSOR "
-               "OFFSET BY THIS ANALYSIS. Direction-of-change conclusions "
-               "for the study area as a whole must not be drawn from these "
-               "data alone."
+            f"The annual mean is {step:+.4f} NDVI higher after the OLI "
+            f"transition ({first_oli}) than before it (Welch "
+            f"t = {t_statistic:.2f}); spread across the record that is "
+            f"equivalent to {equivalent:+.5f} NDVI/yr, or {ratio:.1f}x the "
+            f"median per-pixel Sen slope of {median_slope:+.5f} NDVI/yr. "
+            + ("A step of that size relative to the trend would, on its own, "
+               "leave the regional direction of change unresolvable. "
                if np.isfinite(ratio) and ratio >= 0.5 else
-               "That is small relative to the observed per-pixel slopes, so "
-               "residual sensor offset is unlikely to be driving the trend "
-               "result.")),
+               "That is small relative to the observed per-pixel slopes. ")
+            + ("HOWEVER, this step confounds the instrument change with real "
+               "vegetation change. The direct measurement on "
+               f"near-simultaneous Landsat 7 / Landsat 8-9 pairs puts the "
+               f"harmonised instrument residual at {residual:+.4f} NDVI"
+               + (" - OPPOSITE IN SIGN to the observed step. Including OLI "
+                  "scenes therefore DEPRESSES post-transition composites, so "
+                  "the instrument cannot be producing the increase; the real "
+                  "change is at least as large as measured, and this step is "
+                  "not a sensor artefact."
+                  if residual is not None and residual < 0 < step else
+                  " - the SAME sign as the observed step, so part of the "
+                  "step may be instrumental and the observed change must be "
+                  "discounted by up to that amount.")
+               if residual is not None else
+               "No near-simultaneous cross-sensor pairs were available to "
+               "separate the instrument from real change, so the step "
+               "remains ambiguous and no regional direction-of-change "
+               "conclusion should be drawn.")),
         "caveat": (
-            "This is a REGIONAL-MEAN diagnostic. It bounds the average "
-            "effect; it cannot rule out larger residual offsets on "
-            "particular land covers, because the harmonisation coefficients "
-            "are global rather than cover-specific."),
+            "The step statistic is a REGIONAL-MEAN diagnostic and cannot "
+            "rule out larger residuals on particular land covers, because "
+            "the harmonisation coefficients are global rather than "
+            "cover-specific. The paired residual is an UPPER BOUND on the "
+            "instrument effect: even scenes days apart differ in "
+            "illumination, view geometry and atmosphere."),
     }
     _write(exp.path("summary") / "sensor_confound.json", summary)
     pd.DataFrame({
@@ -1085,13 +1233,21 @@ def main(cfg: Config | None = None):
                            / "final_real_data", subdirs=TREE)
     log = exp.logger
     log.info("M7 FINAL REAL-DATA STUDY | study area: %s", area.name)
-    log.info("%s", SUBSAMPLING_NOTE)
+    # State the sampling method the DATA actually used, read from the
+    # acquisition record - not a constant, which would keep announcing
+    # nearest-neighbour subsampling after the pipeline stopped doing it.
+    sampling = SUBSAMPLING_NOTE
+    acquisition_path = Path(cfg.real_data.metadata_dir) / "m7_acquisition.json"
+    if acquisition_path.exists():
+        sampling = json.loads(acquisition_path.read_text()).get(
+            "landsat", {}).get("sampling", SUBSAMPLING_NOTE)
+    log.info("%s", sampling)
 
     results = {"study_area": area.describe(),
                "data_status": "REAL remote-sensing observations",
                "sources": {"vegetation": PLANETARY_COMPUTER["provenance"],
                            "rainfall": CHIRPS["citation"]},
-               "sampling": SUBSAMPLING_NOTE}
+               "sampling": sampling}
 
     log.info("STAGE 1/12  real dataset and contract validation")
     prepared = stage_dataset(cfg, area, exp, log)
@@ -1099,7 +1255,7 @@ def main(cfg: Config | None = None):
     results["experiment"] = prepared.summary()
 
     log.info("STAGE 2/12  data-quality verification")
-    quality, _ = stage_quality(prepared, cfg, exp, log)
+    quality, _ = stage_quality(prepared, cfg, exp, log, area=area)
     results["data_quality"] = {
         "ndvi": quality["vegetation"], "rainfall": quality["rainfall"],
         "satellite_quality": quality["satellite_quality"]}
@@ -1175,4 +1331,5 @@ if __name__ == "__main__":
         configuration.experiment_name = args.name
     warnings.filterwarnings("ignore", category=RuntimeWarning)
     main(configuration)
+
 

@@ -25,7 +25,8 @@ from pathlib import Path
 
 from src.config import Config
 from src.real_data import resolve_target_grid
-from src.stac_source import (CHIRPS, PLANETARY_COMPUTER, SUBSAMPLING_NOTE,
+from src.stac_source import (AGGREGATION_NOTE, CHIRPS, OVERVIEW_WARNING,
+                             PLANETARY_COMPUTER, SUBSAMPLING_NOTE,
                              build_scene_cache, fetch_chirps_annual,
                              search_landsat)
 from src.study_area import load_study_area
@@ -43,7 +44,8 @@ def build_logger() -> logging.Logger:
 
 
 def main(cfg: Config, *, per_year: int = 8, workers: int = 8,
-         overwrite: bool = False, logger=None) -> dict:
+         overwrite: bool = False, aggregate_factor: int = 1,
+         logger=None) -> dict:
     logger = logger or build_logger()
     real = cfg.real_data
     area = load_study_area(cfg.study_area)
@@ -72,11 +74,19 @@ def main(cfg: Config, *, per_year: int = 8, workers: int = 8,
     logger.info("by sensor: %s", by_sensor)
 
     raw_dir = Path(real.raw_dir)
+    if aggregate_factor > 1:
+        logger.info("reading at NATIVE %.0f m and averaging %dx%d masked "
+                    "pixels into each %.0f m cell",
+                    grid_note["grid_resolution"] / aggregate_factor,
+                    aggregate_factor, aggregate_factor,
+                    grid_note["grid_resolution"])
     logger.info("fetching scenes onto the analysis grid (%d workers)...",
                 workers)
     started = time.time()
     cache = build_scene_cache(items, grid, raw_dir, workers=workers,
-                             overwrite=overwrite, logger=logger)
+                              overwrite=overwrite,
+                              aggregate_factor=aggregate_factor,
+                              logger=logger)
     logger.info("scenes cached in %.1fs", time.time() - started)
 
     logger.info("fetching CHIRPS annual rainfall...")
@@ -102,7 +112,9 @@ def main(cfg: Config, *, per_year: int = 8, workers: int = 8,
             "scenes_failed": cache["n_failed"],
             "failures": cache["failures"],
             "by_sensor": by_sensor,
-            "sampling": SUBSAMPLING_NOTE,
+            "sampling": (AGGREGATION_NOTE if aggregate_factor > 1 else SUBSAMPLING_NOTE),
+            "aggregate_factor": aggregate_factor,
+            "overview_policy_note": OVERVIEW_WARNING,
             "manifest": str(cache["manifest"]),
         },
         "rainfall": {
@@ -128,6 +140,13 @@ if __name__ == "__main__":
                         help="cap on scenes contributed by each year")
     parser.add_argument("--workers", type=int, default=8)
     parser.add_argument("--overwrite", action="store_true")
+    parser.add_argument("--aggregate-factor", type=int, default=1,
+                        help="read at native resolution this many times "
+                             "finer than the analysis grid, mask there, then "
+                             "average the survivors into each cell "
+                             "(10 = native 30 m into a 300 m grid)")
     args = parser.parse_args()
     main(Config.load(args.config), per_year=args.per_year,
-         workers=args.workers, overwrite=args.overwrite)
+         workers=args.workers, overwrite=args.overwrite,
+         aggregate_factor=args.aggregate_factor)
+

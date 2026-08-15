@@ -127,7 +127,7 @@ class ConfoundPrepared:
 
 
 def _confound_setup(tmp_path, annual_means, slope, oli_from=2013,
-                    start=1990):
+                    start=1990, paired_residual=None):
     years = list(range(start, start + len(annual_means)))
     scenes = []
     for year in years:
@@ -141,6 +141,17 @@ def _confound_setup(tmp_path, annual_means, slope, oli_from=2013,
     from src.config import Config
     cfg = Config()
     cfg.real_data.raw_dir = str(raw)
+    # Hermetic: point metadata at the temp directory so the test cannot pick
+    # up a real cross-sensor measurement from the repository.
+    metadata = tmp_path / "metadata"
+    metadata.mkdir(parents=True, exist_ok=True)
+    cfg.real_data.metadata_dir = str(metadata)
+    if paired_residual is not None:
+        (metadata / "sensor_harmonisation_check.json").write_text(json.dumps({
+            "with_harmonisation": {
+                "n_pairs": 12,
+                "pooled_median_oli_minus_etm": paired_residual},
+            "verdict": "test fixture"}))
 
     class FakeExperiment:
         def path(self, subdir, filename=""):
@@ -169,7 +180,8 @@ def test_a_clean_record_reports_no_detectable_step(tmp_path):
     assert result["assessed"] is True
     assert abs(result["step_ndvi"]) < 0.01
     assert result["step_is_statistically_detectable"] is False
-    assert "unlikely to be driving" in result["assessment"]
+    assert "small relative to the observed per-pixel slopes" in \
+        result["assessment"]
 
 
 def test_a_planted_step_is_detected_and_compared_to_the_trend(tmp_path):
@@ -181,10 +193,39 @@ def test_a_planted_step_is_detected_and_compared_to_the_trend(tmp_path):
     assert result["step_ndvi"] == pytest.approx(0.10, abs=1e-9)
     assert result["step_is_statistically_detectable"] is True
     assert result["first_year_with_oli"] == 2013
-    # The step dwarfs the per-pixel slope, so the verdict must be the strong one.
     assert result["step_equivalent_over_median_slope"] > 1
-    assert "CANNOT BE SEPARATED" in result["assessment"]
     assert any(kind == "warning" for kind, _ in messages)
+
+
+def test_without_paired_evidence_the_step_is_left_ambiguous(tmp_path):
+    """An annual-mean step alone cannot separate instrument from vegetation."""
+    means = [0.60] * 23 + [0.70] * 12
+    prepared, cfg, exp, log, _ = _confound_setup(tmp_path, means, 0.0001)
+    result = M7.stage_sensor_confound(prepared, cfg, exp, log)
+    assert result["paired_cross_sensor_residual_ndvi"] is None
+    assert "no regional direction-of-change conclusion" in \
+        result["assessment"].lower().replace("\n", " ")
+
+
+def test_an_opposite_signed_residual_exonerates_the_step(tmp_path):
+    """The key inference: if the instrument pushes DOWN and the record went
+    UP, the instrument cannot have produced the rise."""
+    means = [0.60] * 23 + [0.70] * 12          # observed step is POSITIVE
+    prepared, cfg, exp, log, _ = _confound_setup(tmp_path, means, 0.0001,
+                                                 paired_residual=-0.018)
+    result = M7.stage_sensor_confound(prepared, cfg, exp, log)
+    assert result["paired_cross_sensor_residual_ndvi"] == pytest.approx(-0.018)
+    assert "OPPOSITE IN SIGN" in result["assessment"]
+    assert "not a sensor artefact" in result["assessment"]
+
+
+def test_a_same_signed_residual_forces_a_discount(tmp_path):
+    means = [0.60] * 23 + [0.70] * 12
+    prepared, cfg, exp, log, _ = _confound_setup(tmp_path, means, 0.0001,
+                                                 paired_residual=+0.018)
+    result = M7.stage_sensor_confound(prepared, cfg, exp, log)
+    assert "SAME sign" in result["assessment"]
+    assert "discounted" in result["assessment"]
 
 
 def test_a_step_small_against_the_trend_is_not_over_claimed(tmp_path):
@@ -192,7 +233,8 @@ def test_a_step_small_against_the_trend_is_not_over_claimed(tmp_path):
     prepared, cfg, exp, log, _ = _confound_setup(tmp_path, means, 0.01)
     result = M7.stage_sensor_confound(prepared, cfg, exp, log)
     assert result["step_equivalent_over_median_slope"] < 0.5
-    assert "unlikely to be driving" in result["assessment"]
+    assert "small relative to the observed per-pixel slopes" in \
+        result["assessment"]
 
 
 def test_the_confound_is_skipped_cleanly_without_a_manifest(tmp_path):

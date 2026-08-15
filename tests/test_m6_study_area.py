@@ -299,7 +299,7 @@ def test_bounding_boxes_declare_that_they_are_not_administrative():
 
 
 def test_the_repository_boundary_declares_itself_a_bounding_box():
-    """The shipped Karbi Anglong file must not be mistaken for a district."""
+    """The shipped bounding box must not be mistaken for a district."""
     from src.config import Config
     from pathlib import Path
 
@@ -310,6 +310,42 @@ def test_the_repository_boundary_declares_itself_a_bounding_box():
     assert area.attributes.get("is_administrative_boundary") is False
     assert "NOT the administrative district boundary" in \
         area.attributes["description"]
+
+
+def test_the_authoritative_boundary_is_a_real_administrative_polygon():
+    """The boundary the final study uses must be the district, and must
+    carry the provenance a published map has to cite."""
+    from pathlib import Path
+
+    from src.config import Config
+    from src.study_area import pixel_area_km2
+
+    path = Path(Config().paths.boundaries) / "karbi_anglong.geojson"
+    if not path.exists():
+        pytest.skip("authoritative boundary not fetched "
+                    "(tools/fetch_study_area_boundary.py)")
+    area = StudyArea.from_geojson(path)
+    properties = area.attributes.get("properties", area.attributes)
+
+    assert properties.get("is_administrative_boundary") is True
+    assert properties.get("geometry_kind") == "administrative polygon"
+    for field in ("source", "licence", "vintage", "citation"):
+        assert properties.get(field), f"missing provenance: {field}"
+    assert properties.get("modifications") == \
+        "none; vertices are exactly as published"
+
+    # The 2016 split spans the study period, so both successors belong.
+    merged = properties.get("districts_merged", [])
+    assert len(merged) == 2, f"expected both successor districts, got {merged}"
+    assert properties.get("merge_rationale")
+
+    # Independent sanity check: the undivided district is ~10,434 km2.
+    grid = area.grid(0.004, crs="EPSG:4326")
+    km2 = float(pixel_area_km2(grid)[area.mask(grid)].sum())
+    assert 9_500 < km2 < 11_500, (
+        f"polygon area {km2:,.0f} km2 is not close to the published "
+        "~10,434 km2 for undivided Karbi Anglong")
+    assert area.geometry["type"] in ("Polygon", "MultiPolygon")
 
 
 def test_save_round_trips_the_geometry(tmp_path):

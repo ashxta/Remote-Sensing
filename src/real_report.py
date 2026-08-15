@@ -60,22 +60,41 @@ def _describe(values: np.ndarray, name: str) -> Dict[str, Any]:
     }
 
 
-def build_quality_report(dataset, cfg, *, valid_counts: Optional[np.ndarray] = None
+def build_quality_report(dataset, cfg, *, valid_counts: Optional[np.ndarray] = None,
+                         inside: Optional[np.ndarray] = None
                          ) -> Dict[str, Any]:
-    """Assemble the spatial, temporal, vegetation and rainfall sections."""
+    """Assemble the spatial, temporal, vegetation and rainfall sections.
+
+    `inside` is the boundary mask. With an irregular study area, roughly half
+    the pixels of the enclosing raster lie OUTSIDE the polygon and are NaN by
+    construction. Averaging over the whole grid would report that as
+    "missing data" - on this study area it turns a genuine ~4% missingness
+    into a meaningless 52% - and would make the record look far worse than it
+    is. Every statistic below is therefore computed over the pixels inside
+    the boundary, and the outside count is reported separately as geometry
+    rather than as a data-quality problem.
+    """
     ndvi, rain = dataset.ndvi, dataset.rain
     georef = dataset.georef
     times = [str(t) for t in dataset.times] or [str(i) for i
                                                 in range(dataset.n_time)]
 
-    per_step_missing = np.isnan(ndvi).reshape(dataset.n_time, -1).mean(axis=1)
-    per_step_rain_missing = np.isnan(rain).reshape(dataset.n_time, -1
-                                                   ).mean(axis=1)
-    per_pixel_valid = np.isfinite(ndvi).sum(axis=0)
+    if inside is None:
+        inside = np.ones(dataset.shape, dtype=bool)
+    inside = np.asarray(inside, dtype=bool)
+    flat_inside = inside.reshape(-1)
+    n_inside = int(flat_inside.sum())
+
+    ndvi_in = ndvi.reshape(dataset.n_time, -1)[:, flat_inside]
+    rain_in = rain.reshape(dataset.n_time, -1)[:, flat_inside]
+
+    per_step_missing = np.isnan(ndvi_in).mean(axis=1)
+    per_step_rain_missing = np.isnan(rain_in).mean(axis=1)
+    per_pixel_valid = np.isfinite(ndvi_in).sum(axis=0)
 
     from .study_area import pixel_area_km2
     areas = pixel_area_km2(georef)
-    observed_anywhere = np.isfinite(ndvi).any(axis=0)
+    observed_anywhere = np.isfinite(ndvi).any(axis=0) & inside
 
     # The dataset declares its own provenance; the report repeats it rather
     # than assuming that anything reaching this module is real.
@@ -94,7 +113,14 @@ def build_quality_report(dataset, cfg, *, valid_counts: Optional[np.ndarray] = N
             "resolution": {"x": georef.resolution[0],
                            "y": georef.resolution[1]},
             "extent": georef.to_dict()["bounds"],
-            "n_pixels": int(dataset.n_pixels),
+            "n_pixels_in_raster": int(dataset.n_pixels),
+            "n_pixels_inside_boundary": n_inside,
+            "n_pixels_outside_boundary": int(dataset.n_pixels - n_inside),
+            "outside_boundary_note": (
+                "Pixels outside the study-area polygon are NaN by "
+                "construction. They are geometry, not missing data, and are "
+                "excluded from every statistic in this report."),
+            "study_area_km2": float(areas[inside].sum()),
             "analysed_area_km2": float(areas[observed_anywhere].sum()),
             "pixel_area_km2": {"min": float(areas.min()),
                                "max": float(areas.max())},
@@ -116,8 +142,8 @@ def build_quality_report(dataset, cfg, *, valid_counts: Optional[np.ndarray] = N
                 in zip(times, per_step_missing)},
             "alignment": dataset.metadata.get("temporal_alignment", {}),
         },
-        "vegetation": _describe(ndvi, "ndvi"),
-        "rainfall": _describe(rain, "rainfall"),
+        "vegetation": _describe(ndvi_in, "ndvi"),
+        "rainfall": _describe(rain_in, "rainfall"),
         "satellite_quality": {
             "mean_valid_observations_per_pixel": float(per_pixel_valid.mean()),
             "median_valid_observations_per_pixel":
@@ -245,15 +271,19 @@ def plot_quality_report(dataset, report: Dict[str, Any], figure_dir) -> list:
     written.append(path)
 
     # 2. valid observations per pixel -------------------------------------
+    inside = report.get("_inside_mask")
     counts = np.isfinite(dataset.ndvi).sum(axis=0).astype("float64")
+    if inside is not None:
+        counts = np.where(np.asarray(inside, bool), counts, np.nan)
     figure, (left, right) = plt.subplots(1, 2, figsize=(12, 4.5))
-    image = left.imshow(counts, cmap="viridis")
+    image = left.imshow(np.ma.masked_invalid(counts), cmap="viridis")
     left.set_title("Valid NDVI observations per pixel", fontsize=10)
     left.set_xticks([])
     left.set_yticks([])
     figure.colorbar(image, ax=left, shrink=0.85,
                     label=f"of {dataset.n_time} time steps")
-    right.hist(counts.reshape(-1), bins=min(dataset.n_time + 1, 60),
+    finite_counts = counts[np.isfinite(counts)]
+    right.hist(finite_counts, bins=min(dataset.n_time + 1, 60),
                color="#3a86c8")
     right.axvline(report["satellite_quality"]["min_valid_obs_required"],
                   color="#c0242b", linestyle="--",
@@ -271,8 +301,14 @@ def plot_quality_report(dataset, report: Dict[str, Any], figure_dir) -> list:
 
     # 3. NDVI and rainfall distributions ----------------------------------
     figure, (left, right) = plt.subplots(1, 2, figsize=(12, 4))
-    ndvi = dataset.ndvi[np.isfinite(dataset.ndvi)]
-    rain = dataset.rain[np.isfinite(dataset.rain)]
+    # Distributions describe the study area, so they use the same
+    # inside-boundary restriction as the tables.
+    keep = (np.ones(dataset.shape, bool) if inside is None
+            else np.asarray(inside, bool))
+    ndvi_cube = dataset.ndvi[:, keep]
+    rain_cube = dataset.rain[:, keep]
+    ndvi = ndvi_cube[np.isfinite(ndvi_cube)]
+    rain = rain_cube[np.isfinite(rain_cube)]
     if ndvi.size:
         left.hist(ndvi, bins=60, color="#1a7a3a")
     left.set_xlabel("NDVI")

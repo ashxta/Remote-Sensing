@@ -414,18 +414,32 @@ class StudyArea:
                      "actually processed."),
         }
 
+    #: Provenance that must survive a save/load round trip at the TOP level,
+    #: because `from_geojson` reads these from there. Without it a saved
+    #: administrative polygon reloads with `geometry_kind` unset, and every
+    #: downstream record then reports its provenance as unknown.
+    ROUND_TRIP_KEYS = ("is_administrative_boundary", "geometry_kind",
+                       "licence", "vintage", "provenance", "description")
+
     def save(self, path) -> Path:
         """Write the boundary back out as GeoJSON, for archiving with a run."""
         target = Path(path)
         target.parent.mkdir(parents=True, exist_ok=True)
-        target.write_text(json.dumps(
-            {"type": "FeatureCollection",
-             "name": self.name,
-             "crs_of_coordinates": str(self.crs),
-             "source": self.source,
-             "features": [{"type": "Feature", "geometry": self.geometry,
-                           "properties": dict(self.attributes)}]},
-            indent=2, default=str))
+        properties = dict(self.attributes)
+        nested = properties.get("properties")
+        payload = {"type": "FeatureCollection",
+                   "name": self.name,
+                   "crs_of_coordinates": str(self.crs),
+                   "source": self.source,
+                   "features": [{"type": "Feature", "geometry": self.geometry,
+                                 "properties": properties}]}
+        for key in self.ROUND_TRIP_KEYS:
+            value = properties.get(key)
+            if value is None and isinstance(nested, dict):
+                value = nested.get(key)
+            if value is not None:
+                payload[key] = value
+        target.write_text(json.dumps(payload, indent=2, default=str))
         return target
 
 

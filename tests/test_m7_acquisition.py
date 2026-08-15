@@ -224,6 +224,161 @@ def test_a_saturation_band_of_zeros_masks_nothing():
     assert not landsat_qa_mask(clear, saturation=np.ones((4, 4))).any()
 
 
+# ------------------------------------------ mask-then-aggregate (correction)
+def test_masked_pixels_are_excluded_before_the_average_is_taken():
+    """The whole point of the correction: a mean across cloudy and clear
+    pixels is not a measurement, and no later masking can undo it."""
+    from src.stac_source import _aggregate_valid
+
+    values = np.full((2, 2), 1000, dtype="uint16")
+    values[0, 0] = 9000                      # a bright cloudy pixel
+    usable = np.ones((2, 2), bool)
+    usable[0, 0] = False                     # which the QA mask rejects
+
+    mean, count = _aggregate_valid(values, usable, 2)
+    assert mean[0, 0] == pytest.approx(1000.0), \
+        "the masked pixel must not enter the average"
+    assert count[0, 0] == 3
+    # The naive (wrong) answer would have been the all-pixel mean.
+    assert mean[0, 0] != pytest.approx(values.mean())
+
+
+def test_a_cell_with_no_valid_pixel_is_nan_not_zero():
+    from src.stac_source import _aggregate_valid
+
+    mean, count = _aggregate_valid(np.full((2, 2), 1000, dtype="uint16"),
+                                   np.zeros((2, 2), bool), 2)
+    assert np.isnan(mean[0, 0])
+    assert count[0, 0] == 0
+
+
+def test_fill_valued_pixels_are_treated_as_missing():
+    """Collection-2 fill is 0, which is not a dark surface."""
+    from src.stac_source import _aggregate_valid
+
+    values = np.array([[0, 2000], [2000, 2000]], dtype="uint16")
+    mean, count = _aggregate_valid(values, np.ones((2, 2), bool), 2)
+    assert mean[0, 0] == pytest.approx(2000.0)
+    assert count[0, 0] == 3
+
+
+def test_averaging_stored_integers_equals_averaging_reflectance():
+    """Why it is safe to aggregate DN and scale afterwards: the Collection-2
+    scale factor is affine, so mean(scale*DN + offset) == scale*mean(DN) +
+    offset exactly."""
+    from src.sensors import apply_scale_factors, get_sensor
+    from src.stac_source import _aggregate_valid
+
+    sensor = get_sensor("LANDSAT8_OLI")
+    rng = np.random.default_rng(0)
+    values = rng.integers(8000, 40000, (4, 4)).astype("uint16")
+    usable = np.ones((4, 4), bool)
+
+    mean_dn, _ = _aggregate_valid(values, usable, 4)
+    from_dn = mean_dn[0, 0] * sensor.scale + sensor.offset
+    from_reflectance = np.mean(apply_scale_factors(values, sensor.scale,
+                                                   sensor.offset))
+    assert from_dn == pytest.approx(from_reflectance, abs=1e-12)
+
+
+def test_the_valid_count_records_the_mixed_pixel_information():
+    from src.stac_source import _aggregate_valid
+
+    usable = np.zeros((10, 10), bool)
+    usable[:4] = True                        # 40 of 100 native pixels valid
+    mean, count = _aggregate_valid(np.full((10, 10), 3000, dtype="uint16"),
+                                   usable, 10)
+    assert count[0, 0] == 40
+    assert mean[0, 0] == pytest.approx(3000.0)
+
+
+def test_the_aggregated_path_reads_at_native_resolution(monkeypatch, tmp_path):
+    """It must NOT use an overview: the archive averages reflectance
+    overviews while point-sampling QA, so an overview read blends cloud into
+    clear before any mask can be applied."""
+    seen = []
+
+    def fake_read(href, target, *, mark_zero_as_fill, dtype="uint16",
+                  native=False):
+        seen.append({"href": href, "native": native, "shape": target.shape})
+        from src.sensors import LANDSAT_QA_BITS
+        if "qa" in href:
+            return np.full(target.shape, 1 << LANDSAT_QA_BITS["clear"],
+                           dtype="uint16")
+        return np.full(target.shape, 12000, dtype="uint16")
+
+    monkeypatch.setattr(stac_source, "_read_onto_grid", fake_read)
+    item = StacItem(item_id="scene", datetime="2015-11-01T00:00:00Z",
+                    platform="landsat-8", sensor="LANDSAT8_OLI",
+                    cloud_cover=2.0,
+                    assets={"red": "https://h/s_red.tif",
+                            "nir": "https://h/s_nir.tif",
+                            "qa": "https://h/s_qa.tif"})
+    target = grid(3000.0)
+    record = fetch_scene(item, target, tmp_path, overwrite=True,
+                         aggregate_factor=10)
+
+    assert record is not None
+    assert seen, "nothing was read"
+    assert all(entry["native"] for entry in seen), \
+        "aggregation must read at native resolution, never an overview"
+    for entry in seen:
+        assert entry["shape"] == (target.height * 10, target.width * 10), \
+            "the read grid must be `factor` times finer than the analysis grid"
+
+
+def test_the_aggregated_scene_writes_a_valid_count_layer(monkeypatch,
+                                                         tmp_path):
+    from src.sensors import LANDSAT_QA_BITS
+
+    def fake_read(href, target, *, mark_zero_as_fill, dtype="uint16",
+                  native=False):
+        if "qa" in href:
+            qa = np.full(target.shape, 1 << LANDSAT_QA_BITS["clear"],
+                         dtype="uint16")
+            qa[: target.shape[0] // 2] = 1 << LANDSAT_QA_BITS["cloud"]
+            return qa
+        return np.full(target.shape, 12000, dtype="uint16")
+
+    monkeypatch.setattr(stac_source, "_read_onto_grid", fake_read)
+    item = StacItem(item_id="scene", datetime="2015-11-01T00:00:00Z",
+                    platform="landsat-8", sensor="LANDSAT8_OLI",
+                    cloud_cover=2.0,
+                    assets={"red": "https://h/s_red.tif",
+                            "nir": "https://h/s_nir.tif",
+                            "qa": "https://h/s_qa.tif"})
+    fetch_scene(item, grid(3000.0), tmp_path, overwrite=True,
+                aggregate_factor=10)
+
+    counts = tmp_path / "scene_valid_count.tif"
+    assert counts.exists(), "the mixed-pixel diagnostic must be written"
+    with rasterio.open(counts) as source:
+        values = source.read(1)
+    assert values.max() == 100                   # fully clear cells
+    assert values.min() == 0                     # fully clouded cells
+    with rasterio.open(tmp_path / "scene_qa.tif") as source:
+        quality = source.read(1)
+    clear = 1 << LANDSAT_QA_BITS["clear"]
+    fill = 1 << LANDSAT_QA_BITS["fill"]
+    assert set(np.unique(quality)) <= {clear, fill}
+    assert (quality[values > 0] == clear).all()
+    assert (quality[values == 0] == fill).all()
+
+
+def test_the_overview_warning_records_what_was_measured():
+    warning = stac_source.OVERVIEW_WARNING
+    assert "AVERAGES" in warning
+    assert "point samples" in warning
+    assert "benchmark_resolution" in warning
+
+
+def test_the_aggregation_note_states_the_affine_argument():
+    note = stac_source.AGGREGATION_NOTE
+    assert "NATIVE 30 m" in note
+    assert "affine" in note
+    assert "count of contributing" in note
+
+
 # ------------------------------------------------------------ scene caching
 def test_a_scene_that_misses_the_study_area_is_dropped(monkeypatch, tmp_path):
     monkeypatch.setattr(

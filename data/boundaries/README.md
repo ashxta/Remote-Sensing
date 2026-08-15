@@ -13,9 +13,37 @@ the new area. Only the area actually processed has been studied.
 
 | File | What it is | Authoritative? |
 |---|---|---|
+| `karbi_anglong.geojson` | Administrative polygon, Karbi Anglong East + West merged, 10,410 km² | **Yes** — geoBoundaries gbOpen ADM2 |
 | `karbi_anglong_bbox.geojson` | Rectangular extent, 92.30–93.85 °E, 25.55–26.60 °N | **No** — a bounding box |
 
-## `karbi_anglong_bbox.geojson` — read this before using it
+## `karbi_anglong.geojson` — the boundary in current use
+
+Produced by `tools/fetch_study_area_boundary.py` from **geoBoundaries**
+gbOpen, India ADM2 (ODbL 1.0, 2021 vintage; Runfola et al. 2020, PLoS ONE
+15(4): e0231866). Vertices are exactly as published — nothing was drawn,
+simplified or smoothed.
+
+**Karbi Anglong East and West are merged.** The district was split in 2016
+and the study period is 1990–2024, so the undivided district is the geometry
+that matches the record. Using one successor would change the study area
+partway through the period the data cover.
+
+The polygon measures **10,410 km²** against a published ~10,434 km² for the
+undivided district — a 0.2% agreement, which is the check that it is the real
+geometry rather than something plausible-looking.
+
+geoBoundaries is **not** the Survey of India product, which is the definitive
+national authority. It is used because it is open, versioned, citable and
+obtainable without a licence negotiation. If an SoI or Census of India
+district file is available, prefer it:
+
+```bash
+python tools/fetch_study_area_boundary.py --from-file survey_of_india.geojson
+```
+
+Any published map should name the boundary source it used.
+
+## `karbi_anglong_bbox.geojson` — superseded; read this before using it
 
 This is the rectangular extent that the repository's own Earth Engine
 scripts (`gee/01_ndvi_rainfall_timeseries.py`, `gee/02_landtrendr.py`) have
@@ -37,10 +65,10 @@ Consequences, which must appear in any write-up that uses it:
 * Pixels outside the district are analysed and included in every summary.
 * Comparisons with published district-level figures are not like-for-like.
 
-## Required before M7
+## Stronger sources, if you can obtain them
 
-Obtain the authoritative district polygon and place it here. Candidates,
-in descending order of authority for an Indian district:
+The current polygon is adequate and cited, but geoBoundaries is a
+compilation. In descending order of authority for an Indian district:
 
 1. **Survey of India** administrative boundaries (the national mapping
    agency; definitive, licence terms apply).
@@ -51,16 +79,20 @@ in descending order of authority for an Indian district:
 3. **GADM** (https://gadm.org) level-2 — convenient, widely used in the
    literature, but derived and not authoritative; acceptable if cited as
    such.
-4. **FAO GAUL** / **geoBoundaries** — similar standing to GADM.
+4. **FAO GAUL** / **geoBoundaries** — similar standing to GADM. *(In use.)*
 
-Then set:
+To substitute one:
+
+```bash
+python tools/fetch_study_area_boundary.py --from-file <your-file>.geojson
+```
+
+The configuration is unchanged either way:
 
 ```json
 "study_area": {
   "name": "Karbi_Anglong",
-  "boundary": "data/boundaries/karbi_anglong.geojson",
-  "name_property": "NAME_2",
-  "select": {"NAME_2": "Karbi Anglong"}
+  "boundary": "data/boundaries/karbi_anglong.geojson"
 }
 ```
 

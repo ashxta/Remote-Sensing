@@ -718,7 +718,12 @@ class RealRemoteSensingSource(DataSource):
         if self.real.allow_interpolation:
             ndvi, interpolation = self._interpolate(ndvi)
 
-        missing = float(np.isnan(ndvi).mean())
+        # Missingness INSIDE the boundary. Over the whole raster it would be
+        # dominated by the pixels the polygon excludes, which are geometry
+        # rather than missing observations, and would report a good record
+        # as a bad one.
+        missing = (float(np.isnan(ndvi[:, inside]).mean()) if inside.any()
+                   else float("nan"))
         # Provenance is not asserted, it is READ. A cube built from fixture
         # scenes carries a `synthetic` marker in its GeoTIFF tags, and it
         # wins: the loader has no other way to tell the two apart, because
@@ -727,9 +732,11 @@ class RealRemoteSensingSource(DataSource):
         synthetic = bool(ndvi_provenance.get("synthetic", False))
         if self.logger is not None:
             self.logger.info(
-                "%s dataset: %d steps, grid %dx%d, CRS=%s, %.1f%% of NDVI "
-                "cells missing", "SYNTHETIC FIXTURE" if synthetic else "real",
-                ndvi.shape[0], *georef.shape, georef.crs, 100 * missing)
+                "%s dataset: %d steps, grid %dx%d, CRS=%s, %d pixels inside "
+                "the boundary, %.1f%% of their NDVI cells missing",
+                "SYNTHETIC FIXTURE" if synthetic else "real",
+                ndvi.shape[0], *georef.shape, georef.crs, int(inside.sum()),
+                100 * missing)
             if synthetic:
                 self.logger.warning(
                     "these cubes are SYNTHETIC FIXTURE data; every output of "

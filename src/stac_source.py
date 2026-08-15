@@ -55,6 +55,7 @@ import json
 import time
 import urllib.error
 import urllib.request
+import warnings
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -93,6 +94,27 @@ SUBSAMPLING_NOTE = (
     "analysis cell is one genuine 30 m observation with its own exact QA "
     "flags; it does not summarise the other native pixels in its footprint. "
     "Results are a spatial subsample of the 30 m record.")
+
+#: The corrected coarsening, used when `aggregate_factor > 1`.
+AGGREGATION_NOTE = (
+    "Scenes were read at NATIVE 30 m resolution, the per-pixel QA mask was "
+    "applied at that resolution, and only the surviving 30 m pixels were "
+    "averaged into each analysis cell. Each cell therefore summarises every "
+    "valid observation inside its footprint, and the count of contributing "
+    "30 m pixels is retained as a mixed-pixel diagnostic. Reflectance is "
+    "averaged before the index is formed; because the sensor scale factor "
+    "is affine, the mean of the stored integers is exactly the mean of the "
+    "reflectances.")
+
+#: Why reading a COG overview instead is NOT an acceptable shortcut here.
+OVERVIEW_WARNING = (
+    "Measured on this archive (tools/benchmark_resolution.py): the 4x and 8x "
+    "reflectance overviews are AVERAGES of the underlying native pixels, "
+    "while the QA_PIXEL overviews are point samples. Reading an overview "
+    "therefore averages cloudy and clear reflectance together before any "
+    "mask can be applied, and pairs the result with a quality flag that "
+    "describes only one of the contributing pixels. Overviews are used only "
+    "for scouting coverage, never for the analysed values.")
 
 #: STAC `platform` value -> this project's sensor key.
 PLATFORM_TO_SENSOR = {
@@ -333,7 +355,8 @@ def _choose_overview(source, target_resolution: float) -> Optional[int]:
 
 
 def _read_onto_grid(href: str, grid: GeoRef, *, mark_zero_as_fill: bool,
-                    dtype: str = "uint16") -> np.ndarray:
+                    dtype: str = "uint16",
+                    native: bool = False) -> np.ndarray:
     """Read one COG asset onto the analysis grid by nearest-neighbour.
 
     Reflectance and QA are both read with nearest neighbour; the module
@@ -353,8 +376,13 @@ def _read_onto_grid(href: str, grid: GeoRef, *, mark_zero_as_fill: bool,
     url = f"/vsicurl/{sign_href(href)}"
     target_resolution = max(abs(grid.transform.a), abs(grid.transform.e))
     with rasterio.Env(**GDAL_HTTP_ENV):
-        with rasterio.open(url) as probe:
-            level = _choose_overview(probe, target_resolution)
+        # `native` forces full resolution. It is required whenever the values
+        # will be masked and aggregated, because the archive's overviews
+        # average reflectance while point-sampling QA - see OVERVIEW_WARNING.
+        level = None
+        if not native:
+            with rasterio.open(url) as probe:
+                level = _choose_overview(probe, target_resolution)
         opened = rasterio.open(url, overview_level=level) if level is not None \
             else rasterio.open(url)
         with opened as source:
@@ -368,15 +396,50 @@ def _read_onto_grid(href: str, grid: GeoRef, *, mark_zero_as_fill: bool,
     return values
 
 
+def _aggregate_valid(values: np.ndarray, usable: np.ndarray,
+                     factor: int) -> tuple:
+    """Mean of the VALID fine pixels in each coarse cell, and their count.
+
+    Masking happens before averaging, which is the whole point: a mean taken
+    across cloudy and clear pixels is not a measurement of anything, and no
+    later masking can undo it.
+    """
+    valid = usable & (values > 0)
+    rows = (values.shape[0] // factor) * factor
+    cols = (values.shape[1] // factor) * factor
+    shape = (rows // factor, factor, cols // factor, factor)
+    contribution = np.where(valid[:rows, :cols],
+                            values[:rows, :cols].astype("float64"), 0.0)
+    total = contribution.reshape(shape).sum(axis=(1, 3))
+    count = valid[:rows, :cols].reshape(shape).sum(axis=(1, 3))
+    # Sum/count rather than nanmean: an empty cell is expected wherever the
+    # scene footprint does not reach, and `nanmean` warns on every one of
+    # them. `warnings.catch_warnings` would not help - the filter is global
+    # and these run on a thread pool, so one worker can clear another's.
+    with np.errstate(invalid="ignore", divide="ignore"):
+        mean = np.where(count > 0, total / np.maximum(count, 1), np.nan)
+    return mean, count.astype("int32")
+
+
 def fetch_scene(item: StacItem, grid: GeoRef, cache_dir: Path, *,
-                overwrite: bool = False) -> Optional[dict]:
+                overwrite: bool = False,
+                aggregate_factor: int = 1) -> Optional[dict]:
     """Read one scene onto the analysis grid and cache it locally.
+
+    With `aggregate_factor > 1` the scene is read at NATIVE resolution on a
+    grid that many times finer, masked there, and averaged down - see
+    `AGGREGATION_NOTE` and `OVERVIEW_WARNING`. With a factor of 1 the older
+    single-sample behaviour is kept, for reproducing the earlier run.
 
     Returns a manifest entry in `real_data.SceneRecord` form, or None when
     the scene contributes no usable pixel to the study area (a scene can
     intersect the search box and still miss the boundary, or be entirely
     cloud there).
     """
+    if aggregate_factor > 1:
+        return _fetch_scene_aggregated(item, grid, Path(cache_dir),
+                                       factor=int(aggregate_factor),
+                                       overwrite=overwrite)
     cache_dir = Path(cache_dir)
     cache_dir.mkdir(parents=True, exist_ok=True)
     paths = {name: cache_dir / f"{item.item_id}_{name}.tif"
@@ -437,9 +500,96 @@ def fetch_scene(item: StacItem, grid: GeoRef, cache_dir: Path, *,
     return record
 
 
+def _fetch_scene_aggregated(item: StacItem, grid: GeoRef, cache_dir: Path, *,
+                            factor: int, overwrite: bool) -> Optional[dict]:
+    """Native-resolution read, mask at native, then average into cells."""
+    from rasterio.transform import Affine
+
+    cache_dir.mkdir(parents=True, exist_ok=True)
+    paths = {name: cache_dir / f"{item.item_id}_{name}.tif"
+             for name in ("red", "nir", "qa", "valid_count")}
+    if not overwrite and all(p.exists() for p in
+                             (paths["red"], paths["nir"], paths["qa"])):
+        return _manifest_entry(item, paths, aggregated=True)
+
+    fine = GeoRef(grid.crs,
+                  grid.transform * Affine.scale(1.0 / factor, 1.0 / factor),
+                  grid.height * factor, grid.width * factor)
+
+    try:
+        red = _read_onto_grid(item.assets["red"], fine, mark_zero_as_fill=False,
+                              native=True)
+        nir = _read_onto_grid(item.assets["nir"], fine, mark_zero_as_fill=False,
+                              native=True)
+        qa = _read_onto_grid(item.assets["qa"], fine, mark_zero_as_fill=True,
+                             native=True)
+    except Exception as error:
+        raise StacError(f"{item.item_id}: native read failed: {error}") from error
+
+    saturation = None
+    if item.assets.get("saturation"):
+        try:
+            saturation = _read_onto_grid(item.assets["saturation"], fine,
+                                         mark_zero_as_fill=False, native=True)
+        except Exception:                                # pragma: no cover
+            saturation = None
+
+    from .sensors import landsat_qa_mask
+    usable = landsat_qa_mask(qa, saturation=saturation)
+    red_mean, count = _aggregate_valid(red, usable, factor)
+    nir_mean, _ = _aggregate_valid(nir, usable, factor)
+    if not np.isfinite(red_mean).any() or not np.isfinite(nir_mean).any():
+        return None
+
+    profile = {"driver": "GTiff", "height": grid.height, "width": grid.width,
+               "count": 1, "dtype": "uint16", "crs": grid.crs,
+               "transform": grid.transform, "nodata": 0,
+               "compress": "deflate"}
+    tags = {"SCENE_ID": item.item_id, "PLATFORM": item.platform,
+            "DATETIME": item.datetime,
+            "SOURCE": PLANETARY_COMPUTER["provenance"],
+            "SAMPLING": AGGREGATION_NOTE,
+            "AGGREGATE_FACTOR": str(factor)}
+
+    for name, values in (("red", red_mean), ("nir", nir_mean)):
+        stored = np.where(np.isfinite(values), np.rint(values), 0)
+        with rasterio.open(paths[name], "w", **profile) as target:
+            target.write(np.clip(stored, 0, 65535).astype("uint16"), 1)
+            target.update_tags(ASSET=name, **tags)
+
+    # A cell is "clear" when at least one valid native pixel reached it, and
+    # "fill" otherwise. The real quality information - how many pixels - is
+    # written alongside rather than folded into a flag.
+    from .sensors import LANDSAT_QA_BITS
+    quality = np.where(count > 0, 1 << LANDSAT_QA_BITS["clear"],
+                       1 << LANDSAT_QA_BITS["fill"]).astype("uint16")
+    with rasterio.open(paths["qa"], "w", **profile) as target:
+        target.write(quality, 1)
+        target.update_tags(ASSET="qa", **tags)
+    with rasterio.open(paths["valid_count"], "w",
+                       **{**profile, "dtype": "uint16"}) as target:
+        target.write(np.clip(count, 0, 65535).astype("uint16"), 1)
+        target.update_tags(ASSET="valid_count",
+                           DESCRIPTION=f"valid native pixels of "
+                                       f"{factor * factor} per cell", **tags)
+    return _manifest_entry(item, paths, aggregated=True)
+
+
+def _manifest_entry(item: StacItem, paths: dict, *, aggregated: bool) -> dict:
+    record = {"date": item.date, "sensor": item.sensor,
+              "scene_id": item.item_id,
+              "bands": {"red": str(paths["red"]), "nir": str(paths["nir"])},
+              "qa": str(paths["qa"]),
+              "scene_cloud_cover": item.cloud_cover}
+    if not aggregated and paths.get("saturation") \
+            and Path(paths["saturation"]).exists():
+        record["saturation"] = str(paths["saturation"])
+    return record
+
+
 def build_scene_cache(items: Sequence[StacItem], grid: GeoRef, raw_dir,
                       *, workers: int = 6, overwrite: bool = False,
-                      logger=None) -> dict:
+                      aggregate_factor: int = 1, logger=None) -> dict:
     """Fetch every scene and write the M6 manifest.
 
     Failures are recorded, not raised: a 36-year archive read over a public
@@ -459,7 +609,9 @@ def build_scene_cache(items: Sequence[StacItem], grid: GeoRef, raw_dir,
 
     with ThreadPoolExecutor(max_workers=max(int(workers), 1)) as pool:
         futures = {pool.submit(fetch_scene, item, grid, cache_dir,
-                               overwrite=overwrite): item for item in items}
+                               overwrite=overwrite,
+                               aggregate_factor=aggregate_factor): item
+                   for item in items}
         for future in as_completed(futures):
             item = futures[future]
             done += 1

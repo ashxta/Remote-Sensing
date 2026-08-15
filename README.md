@@ -742,8 +742,12 @@ Collection 2 Level-2 scenes (Landsat 5/7/8/9, 1990–2024, post-monsoon) and 35
 years of CHIRPS annual rainfall, over the configured Assam study extent.
 
 ```bash
-python run_m7_acquire.py --config configs/m7_karbi_anglong_final.json
-python run_m7_study.py    --config configs/m7_karbi_anglong_final.json
+python tools/fetch_study_area_boundary.py          # authoritative polygon
+python run_m7_acquire.py --config configs/m7_karbi_anglong_corrected.json \
+                         --aggregate-factor 10     # native 30 m reads
+python run_m7_study.py   --config configs/m7_karbi_anglong_corrected.json
+python tools/sensor_harmonisation_check.py         # validate harmonisation
+python tools/compare_m7_runs.py --before <run-a> --after <run-b>
 ```
 
 **No credential is required.** Landsat comes from Microsoft Planetary
@@ -754,15 +758,73 @@ made M7 possible after M6 concluded — wrongly — that acquisition was blocked
 Two constraints are baked into the frozen configuration and stated wherever a
 number is reported:
 
-- **300 m analysis grid, by nearest-neighbour subsampling of the 30 m record.**
-  Averaging to 300 m before masking would blend clear and cloudy native pixels
-  into a value no later mask could separate, and a QA bitmask cannot be
-  averaged at all. Subsampling keeps every cell a genuine 30 m observation with
-  its own exact QA flags — at the cost that each cell says nothing about the
-  other ~99 in its footprint.
+- **300 m analysis cells, built by masking at native 30 m and averaging the
+  valid pixels** (`--aggregate-factor 10`). The contributing-pixel count is
+  kept per cell so mixed pixels are visible rather than hidden.
 - **Calendar-year rainfall accumulation**, because CHIRPS monthly files are
   gzipped and cannot be windowed over HTTP. The monsoon still precedes the
   Oct–Dec composite, so the antecedent ordering RESTREND assumes holds.
+
+### Two defects found by targeted review, and fixed
+
+**The study area was a bounding box.** The original M7 run analysed a
+rectangle, which includes substantial land outside the district. It now uses
+the authoritative administrative polygon from **geoBoundaries** (gbOpen India
+ADM2, ODbL 1.0, 2021), merging *Karbi Anglong East* and *West* because the
+2016 district split falls inside the 1990–2024 period. The polygon measures
+**10,410 km²** against a published ~10,434 km² for the undivided district — a
+0.2% agreement that confirms it is the real geometry.
+`tools/fetch_study_area_boundary.py` reproduces it; `--from-file` accepts a
+Survey of India file where one is licensed.
+
+**The 30 m → 300 m coarsening was wrong.** M7 read each scene at the 8× COG
+overview and sampled it onto the analysis grid, describing this as
+nearest-neighbour subsampling. Measurement
+(`tools/benchmark_resolution.py`) showed the archive's **4× and 8×
+reflectance overviews are averages** of the native pixels while the
+**QA_PIXEL overviews are point samples** — so reflectance was averaged across
+cloudy and clear pixels *before* any mask could be applied, and was then
+paired with a quality flag describing only one contributing pixel. The
+corrected pipeline reads every scene at **native 30 m**, applies the QA mask
+there, and averages only the surviving pixels into each 300 m cell, keeping
+the contributing-pixel count as a mixed-pixel diagnostic. The error this
+removes is not cosmetic: nearest-sample and properly-aggregated NDVI differ
+by mean |Δ| = 0.065, larger than the 0.05 NDVI disturbance threshold.
+
+Native 30 m for the whole district was **benchmarked, not assumed away**:
+11,536,709 pixels versus 115,667 at 300 m, ≈17 h of acquisition plus ≈3.5 h
+of feature engineering. The corrected 300 m product costs ~1 h.
+
+### The sensor transition, resolved
+
+M7 reported a +0.02 NDVI step at the 2013 OLI transition and could not tell
+whether it was instrumental. The sharper test — **near-simultaneous Landsat 7
+vs Landsat 8/9 pairs**, days apart over the same ground — settles it
+(`tools/sensor_harmonisation_check.py`, 30 pairs):
+
+| | OLI − ETM+ NDVI |
+|---|---|
+| Without harmonisation | **−0.0055** |
+| With Roy et al. (2016) | **−0.0329** |
+
+Raw OLI and ETM+ NDVI agree almost exactly over this landscape; the published
+transform **overcorrects** it into a −0.033 bias. Roy's coefficients were fit
+globally, and a multiplicative gain of 0.9589 removes ~0.03 NDVI at the 0.8
+values typical of dense forest here.
+
+The transform is **retained** — it is the literature standard, reproducible
+and citable — and the measured residual is carried as a bounded systematic
+uncertainty. Two things make that defensible rather than lazy:
+
+1. **The sign is decisive.** The harmonised residual is *negative*, so
+   including OLI scenes **depresses** post-2013 composites, while the observed
+   step is *positive*. The instrument cannot be manufacturing the greening.
+2. **Keeping it is therefore the conservative choice** for a greening result:
+   disabling harmonisation would make the measured increase *larger*, not
+   smaller. No conclusion in this study depends on the choice.
+
+A locally-fitted coefficient is the correct refinement, but validating one
+needs data this study does not have, so none is invented.
 
 ### Two findings that constrain everything else
 
@@ -839,10 +901,10 @@ That is a property of the architecture. It is **not** a claim that the
 framework has been experimentally validated anywhere other than the area
 actually processed.
 
-The boundary currently shipped, `data/boundaries/karbi_anglong_bbox.geojson`,
-is a **bounding box, not the administrative district**. Area statistics
-computed from it describe the rectangle. The authoritative district polygon
-is a prerequisite for M7 — see `data/boundaries/README.md`.
+The study now uses `data/boundaries/karbi_anglong.geojson`, the authoritative
+administrative polygon. The earlier `karbi_anglong_bbox.geojson` is retained
+only so the original run stays reproducible; it is a rectangle and must not
+be described as the district.
 
 ### Datasets and the choices behind them
 

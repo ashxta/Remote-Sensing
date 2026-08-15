@@ -23,7 +23,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from src import m7_figures as MF                              # noqa: E402
 from src.geo import GeoRef                                    # noqa: E402
-from src.m7_outputs import SOURCE                             # noqa: E402
+from src.m7_outputs import source_line                        # noqa: E402
 from src.trajectory import TRAJECTORY_CODES                   # noqa: E402
 
 
@@ -48,10 +48,17 @@ def main(run: Path) -> int:
     areas = {}
     if summary_path.exists():
         areas = json.loads(summary_path.read_text()).get("areas_km2", {})
-    label = "Karbi_Anglong_bbox"
+    label = "study area"
     study = run / "configuration" / "study_area.geojson"
     if study.exists():
         label = json.loads(study.read_text()).get("name", label)
+
+    # The credit line must describe the run being redrawn, so it comes from
+    # that run's own frozen configuration.
+    from src.config import Config
+    config_path = run / "configuration" / "config.json"
+    SOURCE = source_line(Config.load(config_path) if config_path.exists()
+                         else None)
 
     codes, georef = read(analysis / "trajectory_class.tif")
     codes = np.where(codes == 0, np.nan, codes)
@@ -94,7 +101,7 @@ def main(run: Path) -> int:
             cmap=MF.DIVERGING["trend"], source=SOURCE,
             study_area_label=label))
 
-    written.extend(_profiles(run, figures, label))
+    written.extend(_profiles(run, figures, label, SOURCE))
     written.extend(_documents(run))
     for path in written:
         print("redrew", path.name)
@@ -136,7 +143,7 @@ def _documents(run: Path) -> list:
     return [write_findings(results, Handle(), cfg, Quiet())]
 
 
-def _profiles(run: Path, figures: Path, label: str) -> list:
+def _profiles(run: Path, figures: Path, label: str, source: str) -> list:
     """Redraw the representative temporal profiles.
 
     Everything needed is already on disk: the chosen pixel's grid position
@@ -188,12 +195,12 @@ def _profiles(run: Path, figures: Path, label: str) -> list:
         written.append(MF.temporal_profile(
             times, ndvi[:, row, col], rain[:, row, col],
             figures / f"20_profile_{index:02d}_{safe}.png",
-            title=f"Representative pixel — {name}",
+            title=f"Representative pixel â€” {name}",
             subtitle=(f"row {row}, col {col}; "
                       f"{record['n_valid_observations']} valid composites; "
                       f"most typical of {record['n_candidates']} pixels in "
                       f"this class"),
-            source=SOURCE,
+            source=source,
             sen_slope=at("sens_slope"), mk_p=at("mann_kendall_p"),
             restrend_slope=at("restrend_slope"), restrend_p=at("restrend_p"),
             restrend_valid=bool(at("restrend_valid", 0.0) > 0.5),
@@ -209,3 +216,4 @@ if __name__ == "__main__":
     args = parser.parse_args()
     warnings.filterwarnings("ignore", category=RuntimeWarning)
     raise SystemExit(main(Path(args.run)))
+
